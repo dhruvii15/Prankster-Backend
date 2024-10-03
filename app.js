@@ -7,7 +7,7 @@ var cors = require('cors');
 const mongoose = require('mongoose');
 require('dotenv').config(); 
 
-
+var adminRouter = require('./routes/admin');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
@@ -45,6 +45,7 @@ app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
 app.use('/api/index', indexRouter);
 app.use('/api/', usersRouter);
+app.use('/api/admin', adminRouter);
 
 
 // Logging middleware (Ensure this is correctly placed)
