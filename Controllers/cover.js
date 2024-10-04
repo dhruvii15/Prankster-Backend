@@ -142,10 +142,6 @@ exports.Update = async function (req, res, next) {
             throw new Error('Field names must not contain whitespace.');
         }
 
-        if (!req.body.CoverURL && !req.body.Category) {
-            throw new Error('CoverURL & Category value are required')
-        }
-
         if (req.file) {
             const filename = req.file.filename.replace(/\s+/g, '');  // Remove all spaces
             // req.body.CoverURL = `https://lolcards.link/api/public/images/cover/${filename}`;

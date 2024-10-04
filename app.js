@@ -8,9 +8,9 @@ const mongoose = require('mongoose');
 require('dotenv').config(); 
 
 var adminRouter = require('./routes/admin');
-var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var adsRouter = require('./routes/ads');
+var audioRouter = require('./routes/audio');
 
 var app = express();
 
@@ -44,10 +44,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
 
-app.use('/api/index', indexRouter);
 app.use('/api/', usersRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/ads', adsRouter);
+app.use('/api/audio', audioRouter);
 
 
 // Logging middleware (Ensure this is correctly placed)
