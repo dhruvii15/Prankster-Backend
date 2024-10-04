@@ -29,6 +29,12 @@ router.post('/cover/emoji', upload.none() , userControllers.secure , coverContro
 
 router.post('/cover/realistic', upload.none() ,userControllers.secure , coverControllers.Realistic);
 
+router.post('/cover/read', coverControllers.Read);
+
+router.patch('/cover/update/:id', upload.single('CoverURL'), coverControllers.Update);
+
+router.delete('/cover/delete/:id', coverControllers.Delete);
+
 module.exports = router;
 
 
