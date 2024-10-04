@@ -23,7 +23,7 @@ const upload = multer({ storage: storage })
 router.post('/register' , userControllers.Register);
 
 // Cover page 
-router.post('/cover/create', upload.single('CoverURL'), userControllers.secure , coverControllers.Create);
+router.post('/cover/create', upload.single('CoverURL'), coverControllers.Create);
 
 router.post('/cover/emoji', upload.none() , userControllers.secure , coverControllers.Emoji);
 
