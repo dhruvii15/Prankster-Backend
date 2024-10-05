@@ -17,6 +17,13 @@ exports.Create = async function (req, res, next) {
 
         req.body.CharacterImage = `http://localhost:5001/images/characters/${filename}`;
 
+        // Get the highest existing CharacterId
+        const highestCharacter = await CHARACTER.findOne().sort('-CharacterId').exec();
+        const nextId = highestCharacter ? highestCharacter.CharacterId + 1 : 1;
+
+        // Assign the new ID to req.body.CharacterId
+        req.body.CharacterId = nextId;
+
         const dataCreate = await CHARACTER.create(req.body);
         res.status(201).json({
             status: 1,

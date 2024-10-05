@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 const userControllers = require('../Controllers/users')
 const coverControllers = require('../Controllers/cover')
+const audioControllers = require('../Controllers/audio')
 const multer = require('multer')
 
 
@@ -34,6 +35,10 @@ router.post('/cover/read', coverControllers.Read);
 router.patch('/cover/update/:id', upload.single('CoverURL'), coverControllers.Update);
 
 router.delete('/cover/delete/:id', coverControllers.Delete);
+
+// Character
+
+router.post('/character/all', userControllers.secure, upload.none(), audioControllers.FoundAudio);
 
 module.exports = router;
 

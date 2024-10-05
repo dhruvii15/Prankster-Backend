@@ -44,31 +44,34 @@ exports.FoundAudio = async function (req, res, next) {
             throw new Error('Field names must not contain whitespace.');
         }
 
-        if (!req.body.CharacterId) {
-            throw new Error('CharacterId value are required.');
+        if (!req.body.CharacterId && !req.body.Category) {
+            throw new Error('CharacterId & Category value are required.');
         }
-
         
-        const characterData = await CHARACTER.find({ Category: "audio" }).select('CharacterName');
-
-        // Ensure req.body.CharacterId is a valid index
-        const index = req.body.CharacterId;
-        if (index < 0 || index >= characterData.length) {
-            throw new Error("Invalid CharacterId, index out of range.");
+        var data
+        
+        switch (req.body.Category) {
+            case 'audio':
+                data = await AUDIO.find({ CharacterId: req.body.CharacterId }).select('-_id -__v -CharacterId');
+                break;
+            case 'video':
+                data = await VIDEO.find({ CharacterId: req.body.CharacterId }).select('-_id -__v -CharacterId');
+                break;
+            case 'gallery':
+                data = await GALLERY.find({ CharacterId: req.body.CharacterId }).select('-_id -__v -CharacterId');
+                break;
+            default:
+                throw new Error('Invalid Category')
         }
 
-        const CharacterName = characterData[index].CharacterName;
-
-        const audioData = await AUDIO.find({ CharacterName: CharacterName }).select('-_id -__v -CharacterName');
-
-        if (!audioData || audioData.length === 0) {
+        if (!data || data.length === 0) {
             throw new Error('Audio Not Found');
         }
 
         res.status(200).json({
             status: 1,
             message: 'Data Found Successfully',
-            data: audioData,
+            data: data,
         });
     } catch (error) {
         res.status(400).json({

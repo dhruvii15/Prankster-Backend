@@ -28,8 +28,6 @@ router.post('/create', uploadAudio.fields([
 ]), audioControllers.CreateAudio);
 
 
-router.post('', userControllers.secure, uploadAudio.none(), audioControllers.FoundAudio);
-
 router.post('/read', audioControllers.ReadAudio);
 
 router.patch('/update/:id', uploadAudio.fields([

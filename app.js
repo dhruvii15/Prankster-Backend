@@ -12,6 +12,7 @@ var usersRouter = require('./routes/users');
 var adsRouter = require('./routes/ads');
 var characterRouter = require('./routes/character')
 var audioRouter = require('./routes/audio');
+// var videoRouter = require('./routes/video');
 
 var app = express();
 
@@ -50,6 +51,7 @@ app.use('/api/admin', adminRouter);
 app.use('/api/ads', adsRouter);
 app.use('/api/character', characterRouter);
 app.use('/api/audio', audioRouter);
+// app.use('/api/video', videoRouter);
 
 
 // Logging middleware (Ensure this is correctly placed)

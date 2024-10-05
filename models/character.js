@@ -6,6 +6,7 @@ const characterSchemaData = new Schema({
     CharacterName: String,
     CharacterImage: String,
     Category: String,
+    CharacterId: Number,
 });
 
 
