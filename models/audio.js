@@ -15,4 +15,4 @@ const audioSchemaData = new Schema({
 });
 const AUDIO = mongoose.model('Audio', audioSchemaData);
 
-module.exports =  AUDIO ;
+module.exports =  AUDIO;
