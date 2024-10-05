@@ -1,5 +1,5 @@
 const AUDIO = require('../models/audio')
-const CHARACTER = require('../models/character')
+const VIDEO = require('../models/video')
 
 exports.CreateAudio = async function (req, res, next) {
     try {
@@ -112,11 +112,11 @@ exports.UpdateAudio = async function (req, res, next) {
         if (req.files) {
             if (req.files.Audio) {
                 const audioFilename = req.files.Audio.map((el) => el.filename);
-                req.body.Audio = `http://localhost:5001/images/audio/audio/${audioFilename}`;
+                req.body.Audio = `http://localhost:5001/images/audio/${audioFilename}`;
             }
             if (req.files.AudioImage) {
                 const audioImageFilename = req.files.AudioImage.map((el) => el.filename);
-                req.body.AudioImage = `http://localhost:5001/images/audio/audio/${audioImageFilename}`;
+                req.body.AudioImage = `http://localhost:5001/images/audio/${audioImageFilename}`;
 
             }
         }
