@@ -8,19 +8,7 @@ const multer = require('multer')
 // Define storage for the audio file
 const storageAudio = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, './public/images/audio/audio'); // Destination for audio files
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const sanitizedOriginalName = file.originalname.replace(/\s+/g, ''); // Remove all spaces
-        cb(null, file.fieldname + '-' + uniqueSuffix + sanitizedOriginalName);
-    }
-});
-
-// Define storage for the character image
-const storageCharacterImage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, './public/images/audio/characters'); // Destination for character images
+        cb(null, './public/images/audio'); // Destination for audio files
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -32,20 +20,6 @@ const storageCharacterImage = multer.diskStorage({
 
 // Set up Multer for multiple file uploads
 const uploadAudio = multer({ storage: storageAudio });
-const uploadCharacterImage = multer({ storage: storageCharacterImage });
-
-
-// CHARACTER
-router.post('/character/create', uploadCharacterImage.single('CharacterImage'), audioControllers.Create);
-
-router.post('/character', userControllers.secure, audioControllers.Found);
-
-router.post('/character/read', audioControllers.Read);
-
-router.patch('/character/update/:id', uploadCharacterImage.single('CharacterImage'), audioControllers.Update);
-
-router.delete('/character/delete/:id', audioControllers.Delete);
-
 
 // Audio
 router.post('/create', uploadAudio.fields([
