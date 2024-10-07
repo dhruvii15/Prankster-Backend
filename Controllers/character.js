@@ -1,3 +1,6 @@
+const AUDIO = require('../models/audio');
+const VIDEO = require('../models/video');
+const GALLERY = require('../models/gallery');
 const CHARACTER = require('../models/character')
 
 exports.Create = async function (req, res, next) {
@@ -141,15 +144,51 @@ exports.Update = async function (req, res, next) {
 
 exports.Delete = async function (req, res, next) {
     try {
-        await CHARACTER.findByIdAndDelete(req.params.id);
+        // Find and delete the character by ID
+        const Character = await CHARACTER.findByIdAndDelete(req.params.id);
+
+        if (!Character) {
+            throw new Error('Character Not Found');
+        }
+
+        let deleteResult;
+
+        switch (Character.Category) {
+            case 'audio':
+                deleteResult = await AUDIO.deleteMany({ CharacterId: Character.CharacterId });
+
+                if (deleteResult.deletedCount === 0) {
+                    throw new Error('No Audio Found to Delete');
+                }
+                break;
+            case 'video':
+                deleteResult = await VIDEO.deleteMany({ CharacterId: Character.CharacterId });
+
+                if (deleteResult.deletedCount === 0) {
+                    throw new Error('No Video Found to Delete');
+                }
+                break;
+            case 'gallery':
+                deleteResult = await GALLERY.deleteMany({ CharacterId: Character.CharacterId });
+
+                if (deleteResult.deletedCount === 0) {
+                    throw new Error('No Gallery Images Found to Delete');
+                }
+                break;
+            default:
+                throw new Error('Invalid Category');
+        }
+
         res.status(204).json({
             status: 1,
             message: 'Data Deleted Successfully',
         });
     } catch (error) {
+        // Send error response
         res.status(400).json({
             status: 0,
             message: error.message,
         });
     }
 };
+

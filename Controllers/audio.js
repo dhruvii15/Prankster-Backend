@@ -1,5 +1,6 @@
-const AUDIO = require('../models/audio')
-const VIDEO = require('../models/video')
+const AUDIO = require('../models/audio');
+const VIDEO = require('../models/video');
+const GALLERY = require('../models/gallery');
 
 exports.CreateAudio = async function (req, res, next) {
     try {
@@ -69,7 +70,7 @@ exports.FoundAudio = async function (req, res, next) {
                 data = await GALLERY.find({ CharacterId: req.body.CharacterId }).select('-_id -__v -CharacterId');
 
                 if (!data || data.length === 0) {
-                    throw new Error('Gallery Not Found');
+                    throw new Error('Gallery Image Not Found');
                 }
                 break;
             default:
