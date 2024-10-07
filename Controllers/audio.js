@@ -53,19 +53,27 @@ exports.FoundAudio = async function (req, res, next) {
         switch (req.body.Category) {
             case 'audio':
                 data = await AUDIO.find({ CharacterId: req.body.CharacterId }).select('-_id -__v -CharacterId');
+
+                if (!data || data.length === 0) {
+                    throw new Error('Audio Not Found');
+                }
                 break;
             case 'video':
                 data = await VIDEO.find({ CharacterId: req.body.CharacterId }).select('-_id -__v -CharacterId');
+
+                if (!data || data.length === 0) {
+                    throw new Error('Video Not Found');
+                }
                 break;
             case 'gallery':
                 data = await GALLERY.find({ CharacterId: req.body.CharacterId }).select('-_id -__v -CharacterId');
+
+                if (!data || data.length === 0) {
+                    throw new Error('Gallery Not Found');
+                }
                 break;
             default:
                 throw new Error('Invalid Category')
-        }
-
-        if (!data || data.length === 0) {
-            throw new Error('Audio Not Found');
         }
 
         res.status(200).json({
