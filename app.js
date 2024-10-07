@@ -14,6 +14,7 @@ var characterRouter = require('./routes/character')
 var audioRouter = require('./routes/audio');
 var videoRouter = require('./routes/video');
 var galleryRouter = require('./routes/gallery');
+var prankRouter = require('./routes/prank');
 
 var app = express();
 
@@ -54,6 +55,7 @@ app.use('/api/character', characterRouter);
 app.use('/api/audio', audioRouter);
 app.use('/api/video', videoRouter);
 app.use('/api/gallery', galleryRouter);
+app.use('/api/prank', prankRouter);
 
 
 // Logging middleware (Ensure this is correctly placed)
