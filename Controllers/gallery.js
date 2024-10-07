@@ -17,6 +17,13 @@ exports.CreateGallery = async function (req, res, next) {
 
         req.body.GalleryImage = `http://localhost:5001/images/gallery/${galleryImageFilename}`;
 
+         // Get the highest existing ItemId
+         const highestItem = await GALLERY.findOne().sort('-ItemId').exec();
+         const nextId = highestItem ? highestItem.ItemId + 1 : 1;
+ 
+         // Assign the new ID to req.body.ItemId
+         req.body.ItemId = nextId; 
+
         const dataCreate = await GALLERY.create(req.body);
 
         res.status(201).json({

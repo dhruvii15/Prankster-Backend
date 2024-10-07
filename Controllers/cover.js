@@ -1,4 +1,5 @@
 const COVER = require('../models/cover')
+const USER = require('../models/users')
 
 exports.Create = async function (req, res, next) {
     try {
@@ -17,6 +18,13 @@ exports.Create = async function (req, res, next) {
         }
 
         req.body.CoverURL = `http://localhost:5001/images/cover/${filename}`;
+
+        // Get the highest existing ItemId
+        const highestItem = await COVER.findOne().sort('-ItemId').exec();
+        const nextId = highestItem ? highestItem.ItemId + 1 : 1;
+
+        // Assign the new ID to req.body.ItemId
+        req.body.ItemId = nextId;
 
         const dataCreate = await COVER.create(req.body);
         res.status(201).json({
@@ -53,12 +61,23 @@ exports.Emoji = async function (req, res, next) {
         //     page = 1;
         // }
 
+        const user = await USER.findById(req.User).select('FavouriteCover');
+        if (!user) {
+            throw new Error('User not found');
+        }
+        const favoriteList = user.FavouriteCover;
+
         const emojiData = await COVER.find({ Category: "emoji" })
             .select('-_id -Category -__v')
             .limit(limit * 1)
             .skip((page - 1) * limit)
             .exec();
 
+        // Add favorite status to each item
+        const dataWithFavoriteStatus = emojiData.map(item => ({
+            ...item.toObject(),
+            isFavorite: favoriteList.includes(item.ItemId)
+        }));
         // const count = await COVER.countDocuments();
 
         res.status(200).json({
@@ -68,7 +87,7 @@ exports.Emoji = async function (req, res, next) {
             // totalCount: count,             // Total number of items
             // page: parseInt(page),          // Current page
             // totalPages: Math.ceil(count / limit), // Total number of pages
-            data: emojiData
+            data: dataWithFavoriteStatus
         });
     } catch (error) {
         res.status(400).json({
@@ -94,18 +113,30 @@ exports.Realistic = async function (req, res, next) {
         const { page } = req.body;
         const limit = 10;
 
+        const user = await USER.findById(req.User).select('FavouriteCover');
+        if (!user) {
+            throw new Error('User not found');
+        }
+        const favoriteList = user.FavouriteCover;
+
         const realisticData = await COVER.find({ Category: "realistic" })
             .select('-_id -Category -__v')
             .limit(limit * 1)
             .skip((page - 1) * limit)
             .exec();
 
+        // Add favorite status to each item
+        const dataWithFavoriteStatus = realisticData.map(item => ({
+            ...item.toObject(),
+            isFavorite: favoriteList.includes(item.ItemId)
+        }));
+
         // const count = await COVER.countDocuments();
 
         res.status(200).json({
             status: 1,
             message: 'Data Found Successfully',
-            data: realisticData,
+            data: dataWithFavoriteStatus,
         });
     } catch (error) {
         res.status(400).json({

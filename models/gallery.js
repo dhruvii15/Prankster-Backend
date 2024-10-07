@@ -11,6 +11,7 @@ const gallerySchemaData = new Schema({
         required: true
     },
     CharacterId: Number,
+    ItemId: Number,
 });
 const GALLERY = mongoose.model('Gallery', gallerySchemaData);
 

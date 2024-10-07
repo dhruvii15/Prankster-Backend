@@ -6,7 +6,11 @@ const userData = new Schema({
     {
         type: Boolean,
         required: true
-    }
+    },
+    FavouriteAudio: [Number],
+    FavouriteVideo: [String],
+    FavouriteGallery: [String],
+    FavouriteCover: [String]
 });
 
 module.exports = mongoose.model('register',userData)

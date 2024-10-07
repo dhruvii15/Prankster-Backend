@@ -23,6 +23,10 @@ const upload = multer({ storage: storage })
 /* GET user listing. */
 router.post('/register' , userControllers.Register);
 
+// Premium Update
+router.post('/premium', userControllers.secure, upload.none(), userControllers.Update);
+
+
 // Cover page 
 router.post('/cover/create', upload.single('CoverURL'), coverControllers.Create);
 
@@ -36,9 +40,15 @@ router.patch('/cover/update/:id', upload.single('CoverURL'), coverControllers.Up
 
 router.delete('/cover/delete/:id', coverControllers.Delete);
 
-// Character
 
+// Character
 router.post('/character/all', userControllers.secure, upload.none(), audioControllers.FoundAudio);
+
+// Favourite
+router.post('/favourite', userControllers.secure, upload.none(), userControllers.Favourite);
+
+router.post('/favourite/all', userControllers.secure, upload.none(), userControllers.FavouriteRead);
+
 
 module.exports = router;
 

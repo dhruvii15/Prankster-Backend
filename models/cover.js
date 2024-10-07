@@ -9,7 +9,8 @@ const coverData = new Schema({
     Category: {
         type: String,
         enum: ['emoji', 'realistic']
-    }
+    },
+    ItemId : Number
 });
 
 module.exports = mongoose.model('cover',coverData)

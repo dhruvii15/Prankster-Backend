@@ -12,6 +12,7 @@ const videoSchemaData = new Schema({
         required: true
     },
     CharacterId: Number,
+    ItemId: Number,
 });
 const VIDEO = mongoose.model('Video', videoSchemaData);
 

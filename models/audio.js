@@ -12,6 +12,7 @@ const audioSchemaData = new Schema({
         required: true
     },
     CharacterId: Number,
+    ItemId: Number,
 });
 const AUDIO = mongoose.model('Audio', audioSchemaData);
 

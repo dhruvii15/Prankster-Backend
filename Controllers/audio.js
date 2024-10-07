@@ -1,6 +1,7 @@
 const AUDIO = require('../models/audio');
 const VIDEO = require('../models/video');
 const GALLERY = require('../models/gallery');
+const USER = require('../models/users');
 
 exports.CreateAudio = async function (req, res, next) {
     try {
@@ -21,6 +22,13 @@ exports.CreateAudio = async function (req, res, next) {
         req.body.Audio = `http://localhost:5001/images/audio/${audioFilename}`;
         req.body.AudioImage = `http://localhost:5001/images/audio/${audioImageFilename}`;
 
+        // Get the highest existing ItemId
+        const highestItem = await AUDIO.findOne().sort('-ItemId').exec();
+        const nextId = highestItem ? highestItem.ItemId + 1 : 1;
+
+        // Assign the new ID to req.body.ItemId
+        req.body.ItemId = nextId;
+
         const dataCreate = await AUDIO.create(req.body);
 
         res.status(201).json({
@@ -36,6 +44,7 @@ exports.CreateAudio = async function (req, res, next) {
     }
 };
 
+
 exports.FoundAudio = async function (req, res, next) {
     try {
         const hasWhitespaceInKey = obj => {
@@ -44,45 +53,60 @@ exports.FoundAudio = async function (req, res, next) {
         if (hasWhitespaceInKey(req.body)) {
             throw new Error('Field names must not contain whitespace.');
         }
-
-        if (!req.body.CharacterId && !req.body.CategoryId) {
-            throw new Error('CharacterId & Category value are required.');
+        if (!req.body.CharacterId || !req.body.CategoryId) {
+            throw new Error('CharacterId & CategoryId values are required.');
         }
+        const userId = req.User; // Assuming this is set in your authentication middleware
+        if (!userId) {
+            throw new Error('User not authenticated');
+        }
+        // Fetch user's favorite lists
+        const user = await USER.findById(userId).select('FavouriteAudio FavouriteVideo FavouriteGallery');
+        if (!user) {
+            throw new Error('User not found');
+        }
+        let data;
         
-        var data
-        
+        let favoriteList;
         switch (req.body.CategoryId) {
             case '1':
-                data = await AUDIO.find({ CharacterId: req.body.CharacterId }).select('-_id -__v -CharacterId');
-
+                data = await AUDIO.find({ CharacterId: req.body.CharacterId }).select('-__v -CharacterId -_id');
+                favoriteList = user.FavouriteAudio;
                 if (!data || data.length === 0) {
                     throw new Error('Audio Not Found');
                 }
                 break;
             case '2':
-                data = await VIDEO.find({ CharacterId: req.body.CharacterId }).select('-_id -__v -CharacterId');
-
+                data = await VIDEO.find({ CharacterId: req.body.CharacterId }).select('-__v -CharacterId -_id');
+                favoriteList = user.FavouriteVideo;
                 if (!data || data.length === 0) {
                     throw new Error('Video Not Found');
                 }
                 break;
             case '3':
-                data = await GALLERY.find({ CharacterId: req.body.CharacterId }).select('-_id -__v -CharacterId');
-
+                data = await GALLERY.find({ CharacterId: req.body.CharacterId }).select('-__v -CharacterId -_id');
+                favoriteList = user.FavouriteGallery;
                 if (!data || data.length === 0) {
                     throw new Error('Gallery Image Not Found');
                 }
                 break;
             default:
-                throw new Error('Invalid Category')
+                throw new Error('Invalid Category');
         }
 
+        // Add favorite status to each item
+        const dataWithFavoriteStatus = data.map(item => ({
+            ...item.toObject(),
+            isFavorite: favoriteList.includes(item.ItemId)
+        }));
+        
         res.status(200).json({
             status: 1,
             message: 'Data Found Successfully',
-            data: data,
+            data: dataWithFavoriteStatus,
         });
     } catch (error) {
+        console.error('Error in FoundAudio:', error);
         res.status(400).json({
             status: 0,
             message: error.message,
