@@ -45,28 +45,28 @@ exports.FoundAudio = async function (req, res, next) {
             throw new Error('Field names must not contain whitespace.');
         }
 
-        if (!req.body.CharacterId && !req.body.Category) {
+        if (!req.body.CharacterId && !req.body.CategoryId) {
             throw new Error('CharacterId & Category value are required.');
         }
         
         var data
         
-        switch (req.body.Category) {
-            case 'audio':
+        switch (req.body.CategoryId) {
+            case '1':
                 data = await AUDIO.find({ CharacterId: req.body.CharacterId }).select('-_id -__v -CharacterId');
 
                 if (!data || data.length === 0) {
                     throw new Error('Audio Not Found');
                 }
                 break;
-            case 'video':
+            case '2':
                 data = await VIDEO.find({ CharacterId: req.body.CharacterId }).select('-_id -__v -CharacterId');
 
                 if (!data || data.length === 0) {
                     throw new Error('Video Not Found');
                 }
                 break;
-            case 'gallery':
+            case '3':
                 data = await GALLERY.find({ CharacterId: req.body.CharacterId }).select('-_id -__v -CharacterId');
 
                 if (!data || data.length === 0) {
