@@ -2,9 +2,9 @@ const PRANK = require('../models/prank');
 const crypto = require('crypto');
 
 
-function generateUniqueName(baseWord, length = 8) {
+function generateUniqueName(baseWord, length = 30) {
     const randomPart = crypto.randomBytes(length).toString('hex').slice(0, length);
-    return `${baseWord}-${randomPart}`;
+    return `${baseWord}%&&${randomPart}^$${randomPart}$$%^${randomPart}#%$${randomPart}#${randomPart}`;
 }
 
 async function isUrlUnique(url) {
@@ -17,7 +17,7 @@ async function createUniqueUrl(baseWord) {
     let url;
     while (!isUnique) {
         const uniqueName = generateUniqueName(baseWord);
-        url = `https://pslink.world/api/public/${uniqueName}`;
+        url = `https://pslink.world/${uniqueName}`;
         isUnique = await isUrlUnique(url);
     }
     return url;
@@ -71,6 +71,7 @@ exports.Create = async function (req, res, next) {
         });
     }
 };
+
 
 exports.Read = async function (req, res, next) {
     try {
