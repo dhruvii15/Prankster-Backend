@@ -16,8 +16,8 @@ exports.CreateVideo = async function (req, res, next) {
         const videoFilename = req.files.Video.map((el) => el.filename);
         const videoImageFilename = req.files.VideoImage.map((el) => el.filename);
 
-        req.body.Video = `http://localhost:5001/images/video/${videoFilename}`;
-        req.body.VideoImage = `http://localhost:5001/images/video/${videoImageFilename}`;
+        req.body.Video = `https://pslink.world/api/public/images/video/${videoFilename}`;
+        req.body.VideoImage = `https://pslink.world/api/public/images/video/${videoImageFilename}`;
 
          // Get the highest existing ItemId
          const highestItem = await VIDEO.findOne().sort('-ItemId').exec();
@@ -73,11 +73,11 @@ exports.UpdateVideo = async function (req, res, next) {
         if (req.files) {
             if (req.files.Video) {
                 const VideoFilename = req.files.Video.map((el) => el.filename);
-                req.body.Video = `http://localhost:5001/images/video/${VideoFilename}`;
+                req.body.Video = `https://pslink.world/api/public/images/video/${VideoFilename}`;
             }
             if (req.files.VideoImage) {
                 const VideoImageFilename = req.files.VideoImage.map((el) => el.filename);
-                req.body.VideoImage = `http://localhost:5001/images/video/${VideoImageFilename}`;
+                req.body.VideoImage = `https://pslink.world/api/public/images/video/${VideoImageFilename}`;
 
             }
         }

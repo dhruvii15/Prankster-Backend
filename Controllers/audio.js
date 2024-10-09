@@ -19,8 +19,8 @@ exports.CreateAudio = async function (req, res, next) {
         const audioFilename = req.files.Audio.map((el) => el.filename);
         const audioImageFilename = req.files.AudioImage.map((el) => el.filename);
 
-        req.body.Audio = `http://localhost:5001/images/audio/${audioFilename}`;
-        req.body.AudioImage = `http://localhost:5001/images/audio/${audioImageFilename}`;
+        req.body.Audio = `https://pslink.world/api/public/images/audio/${audioFilename}`;
+        req.body.AudioImage = `https://pslink.world/api/public/images/audio/${audioImageFilename}`;
 
         // Get the highest existing ItemId
         const highestItem = await AUDIO.findOne().sort('-ItemId').exec();
@@ -144,11 +144,11 @@ exports.UpdateAudio = async function (req, res, next) {
         if (req.files) {
             if (req.files.Audio) {
                 const audioFilename = req.files.Audio.map((el) => el.filename);
-                req.body.Audio = `http://localhost:5001/images/audio/${audioFilename}`;
+                req.body.Audio = `https://pslink.world/api/public/images/audio/${audioFilename}`;
             }
             if (req.files.AudioImage) {
                 const audioImageFilename = req.files.AudioImage.map((el) => el.filename);
-                req.body.AudioImage = `http://localhost:5001/images/audio/${audioImageFilename}`;
+                req.body.AudioImage = `https://pslink.world/api/public/images/audio/${audioImageFilename}`;
 
             }
         }

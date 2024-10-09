@@ -17,7 +17,7 @@ exports.Create = async function (req, res, next) {
             throw new Error('CoverURL & Category value are required')
         }
 
-        req.body.CoverURL = `http://localhost:5001/images/cover/${filename}`;
+        req.body.CoverURL = `https://pslink.world/api/public/images/cover/${filename}`;
 
         // Get the highest existing ItemId
         const highestItem = await COVER.findOne().sort('-ItemId').exec();
@@ -176,7 +176,7 @@ exports.Update = async function (req, res, next) {
         if (req.file) {
             const filename = req.file.filename.replace(/\s+/g, '');  // Remove all spaces
             // req.body.CoverURL = `https://lolcards.link/api/public/images/cover/${filename}`;
-            req.body.CoverURL = `http://localhost:5001/images/cover/${filename}`;
+            req.body.CoverURL = `https://pslink.world/api/public/images/cover/${filename}`;
         }
 
         const dataUpdate = await COVER.findByIdAndUpdate(req.params.id, req.body, { new: true });

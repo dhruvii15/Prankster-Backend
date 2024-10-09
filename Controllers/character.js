@@ -18,7 +18,7 @@ exports.Create = async function (req, res, next) {
             throw new Error('CharacterImage & CharacterName values are required');
         }
 
-        req.body.CharacterImage = `http://localhost:5001/images/characters/${filename}`;
+        req.body.CharacterImage = `https://pslink.world/api/public/images/characters/${filename}`;
 
         // Get the highest existing CharacterId
         const highestCharacter = await CHARACTER.findOne().sort('-CharacterId').exec();
@@ -125,7 +125,7 @@ exports.Update = async function (req, res, next) {
         if (req.file) {
             const filename = req.file.filename.replace(/\s+/g, '');  // Remove all spaces
             // req.body.CoverURL = `https://lolcards.link/api/public/images/cover/${filename}`;
-            req.body.CharacterImage = `http://localhost:5001/images/characters/${filename}`;
+            req.body.CharacterImage = `https://pslink.world/api/public/images/characters/${filename}`;
         }
 
         const dataUpdate = await CHARACTER.findByIdAndUpdate(req.params.id, req.body, { new: true });

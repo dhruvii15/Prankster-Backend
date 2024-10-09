@@ -17,7 +17,7 @@ async function createUniqueUrl(baseWord) {
     let url;
     while (!isUnique) {
         const uniqueName = generateUniqueName(baseWord);
-        url = `http://localhost:5001/${uniqueName}`;
+        url = `https://pslink.world/api/public/${uniqueName}`;
         isUnique = await isUrlUnique(url);
     }
     return url;
@@ -41,8 +41,8 @@ exports.Create = async function (req, res, next) {
         const CoverImageFilename = req.files.CoverImage.map((el) => el.filename);
         const FileFilename = req.files.File.map((el) => el.filename);
 
-        req.body.CoverImage = `http://localhost:5001/images/prank/${CoverImageFilename}`;
-        req.body.File = `http://localhost:5001/images/prank/${FileFilename}`;
+        req.body.CoverImage = `https://pslink.world/api/public/images/prank/${CoverImageFilename}`;
+        req.body.File = `https://pslink.world/api/public/images/prank/${FileFilename}`;
 
         // Generate and add unique URL
         const baseWord = "prank"; // You can change this or make it dynamic

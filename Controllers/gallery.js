@@ -15,7 +15,7 @@ exports.CreateGallery = async function (req, res, next) {
 
         const galleryImageFilename = req.files.GalleryImage.map((el) => el.filename);
 
-        req.body.GalleryImage = `http://localhost:5001/images/gallery/${galleryImageFilename}`;
+        req.body.GalleryImage = `https://pslink.world/api/public/images/gallery/${galleryImageFilename}`;
 
          // Get the highest existing ItemId
          const highestItem = await GALLERY.findOne().sort('-ItemId').exec();
@@ -71,7 +71,7 @@ exports.UpdateGallery = async function (req, res, next) {
         if (req.files) {
             if (req.files.GalleryImage) {
                 const GalleryImageFilename = req.files.GalleryImage.map((el) => el.filename);
-                req.body.GalleryImage = `http://localhost:5001/images/gallery/${GalleryImageFilename}`;
+                req.body.GalleryImage = `https://pslink.world/api/public/images/gallery/${GalleryImageFilename}`;
             }
         }
 
