@@ -10,7 +10,15 @@ const userData = new Schema({
     FavouriteAudio: [Number],
     FavouriteVideo: [String],
     FavouriteGallery: [String],
-    FavouriteCover: [String]
+    FavouriteCover: [String],
+    Spin : {
+        type: Number,
+        default: 4
+    },
+    SpinAudio: [Number],
+    SpinVideo: [String],
+    SpinGallery: [String],
+    SpinCover: [String]
 });
 
 module.exports = mongoose.model('register',userData)

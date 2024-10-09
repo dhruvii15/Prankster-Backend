@@ -10,6 +10,11 @@ const coverData = new Schema({
         type: String,
         enum: ['emoji', 'realistic']
     },
+    CoverPremium:
+    {
+        type: Boolean,
+        required: true
+    },
     ItemId : Number
 });
 

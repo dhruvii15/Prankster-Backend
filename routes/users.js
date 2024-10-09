@@ -21,7 +21,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage })
 
 /* GET user listing. */
-router.post('/register' , userControllers.Register);
+router.post('/register' , upload.none(), userControllers.Register);
 
 // Premium Update
 router.post('/premium', userControllers.secure, upload.none(), userControllers.Update);
