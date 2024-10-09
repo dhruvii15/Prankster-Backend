@@ -11,14 +11,14 @@ const userData = new Schema({
     FavouriteVideo: [String],
     FavouriteGallery: [String],
     FavouriteCover: [String],
-    Spin : {
-        type: Number,
-        default: 4
-    },
-    SpinAudio: [Number],
-    SpinVideo: [String],
-    SpinGallery: [String],
-    SpinCover: [String]
+    // Spin : {
+    //     type: Number,
+    //     default: 4
+    // },
+    // SpinAudio: [Number],
+    // SpinVideo: [String],
+    // SpinGallery: [String],
+    // SpinCover: [String]
 });
 
 module.exports = mongoose.model('register',userData)

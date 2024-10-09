@@ -47,99 +47,71 @@ exports.CreateAudio = async function (req, res, next) {
 
 exports.FoundAudio = async function (req, res, next) {
     try {
-      const hasWhitespaceInKey = obj => {
-        return Object.keys(obj).some(key => /\s/.test(key));
-      };
-  
-      if (hasWhitespaceInKey(req.body)) {
-        throw new Error('Field names must not contain whitespace.');
-      }
-  
-      if (!req.body.CharacterId || !req.body.CategoryId) {
-        throw new Error('CharacterId & CategoryId values are required.');
-      }
-  
-      const userId = req.User; // Assuming this is set in your authentication middleware
-      if (!userId) {
-        throw new Error('User not authenticated');
-      }
-  
-      // Fetch user's favorite lists and collect fields
-      const user = await USER.findById(userId).select('FavouriteAudio FavouriteVideo FavouriteGallery SpinAudio SpinVideo SpinGallery');
-      if (!user) {
-        throw new Error('User not found');
-      }
-  
-      let data;
-      let favoriteList;
-      let collectField;
-  
-      switch (req.body.CategoryId) {
-        case '1':
-          data = await AUDIO.find({ CharacterId: req.body.CharacterId }).select('-__v -CharacterId -_id');
-          favoriteList = user.FavouriteAudio;
-          collectField = 'SpinAudio';
-          if (!data || data.length === 0) {
-            throw new Error('Audio Not Found');
-          }
-          break;
-        case '2':
-          data = await VIDEO.find({ CharacterId: req.body.CharacterId }).select('-__v -CharacterId -_id');
-          favoriteList = user.FavouriteVideo;
-          collectField = 'SpinVideo';
-          if (!data || data.length === 0) {
-            throw new Error('Video Not Found');
-          }
-          break;
-        case '3':
-          data = await GALLERY.find({ CharacterId: req.body.CharacterId }).select('-__v -CharacterId -_id');
-          favoriteList = user.FavouriteGallery;
-          collectField = 'SpinGallery';
-          if (!data || data.length === 0) {
-            throw new Error('Gallery Image Not Found');
-          }
-          break;
-        default:
-          throw new Error('Invalid Category');
-      }
-  
-      // Add favorite status and update premium status to each item
-      const dataWithUpdatedStatus = data.map(item => {
-        const itemObject = item.toObject();
-        return {
-          ...itemObject,
-          isFavorite: favoriteList.includes(item.ItemId),
-          premium: user[collectField].includes(item.ItemId) ? false : item.AudioPremium
+        const hasWhitespaceInKey = obj => {
+            return Object.keys(obj).some(key => /\s/.test(key));
         };
-      });
-  
-      // Handle collect functionality
-      if (req.body.collect) {
-        const collectNumber = parseInt(req.body.collect);
-        if (isNaN(collectNumber)) {
-          throw new Error('Invalid collect value');
+        if (hasWhitespaceInKey(req.body)) {
+            throw new Error('Field names must not contain whitespace.');
         }
-  
-        if (!user[collectField].includes(collectNumber)) {
-          await USER.findByIdAndUpdate(userId, {
-            $addToSet: { [collectField]: collectNumber }
-          });
+        if (!req.body.CharacterId || !req.body.CategoryId) {
+            throw new Error('CharacterId & CategoryId values are required.');
         }
-      }
-  
-      res.status(200).json({
-        status: 1,
-        message: 'Data Found Successfully',
-        data: dataWithUpdatedStatus,
-      });
+        const userId = req.User; // Assuming this is set in your authentication middleware
+        if (!userId) {
+            throw new Error('User not authenticated');
+        }
+        // Fetch user's favorite lists
+        const user = await USER.findById(userId).select('FavouriteAudio FavouriteVideo FavouriteGallery');
+        if (!user) {
+            throw new Error('User not found');
+        }
+        let data;
+        let favoriteList;
+        switch (req.body.CategoryId) {
+            case '1':
+                data = await AUDIO.find({ CharacterId: req.body.CharacterId }).select('-__v -CharacterId -_id');
+                favoriteList = user.FavouriteAudio;
+                if (!data || data.length === 0) {
+                    throw new Error('Audio Not Found');
+                }
+                break;
+            case '2':
+                data = await VIDEO.find({ CharacterId: req.body.CharacterId }).select('-__v -CharacterId -_id');
+                favoriteList = user.FavouriteVideo;
+                if (!data || data.length === 0) {
+                    throw new Error('Video Not Found');
+                }
+                break;
+            case '3':
+                data = await GALLERY.find({ CharacterId: req.body.CharacterId }).select('-__v -CharacterId -_id');
+                favoriteList = user.FavouriteGallery;
+                if (!data || data.length === 0) {
+                    throw new Error('Gallery Image Not Found');
+                }
+                break;
+            default:
+                throw new Error('Invalid Category');
+        }
+
+        // Add favorite status to each item
+        const dataWithFavoriteStatus = data.map(item => ({
+            ...item.toObject(),
+            isFavorite: favoriteList.includes(item.ItemId)
+        }));
+        
+        res.status(200).json({
+            status: 1,
+            message: 'Data Found Successfully',
+            data: dataWithFavoriteStatus,
+        });
     } catch (error) {
-      console.error('Error in FoundAudio:', error);
-      res.status(400).json({
-        status: 0,
-        message: error.message,
-      });
+        console.error('Error in FoundAudio:', error);
+        res.status(400).json({
+            status: 0,
+            message: error.message,
+        });
     }
-  };
+};
 
 
 exports.ReadAudio = async function (req, res, next) {
@@ -210,3 +182,123 @@ exports.DeleteAudio = async function (req, res, next) {
         });
     }
 };
+
+
+
+// exports.FoundAudio = async function (req, res, next) {
+//     try {
+//         const hasWhitespaceInKey = (obj) => {
+//             return Object.keys(obj).some((key) => /\s/.test(key));
+//         };
+
+//         if (hasWhitespaceInKey(req.body)) {
+//             throw new Error('Field names must not contain whitespace.');
+//         }
+
+//         if (!req.body.CharacterId || !req.body.CategoryId) {
+//             throw new Error('CharacterId & CategoryId values are required.');
+//         }
+
+//         const userId = req.User; // Assuming this is set in your authentication middleware
+//         if (!userId) {
+//             throw new Error('User not authenticated');
+//         }
+
+//         // Fetch user's favorite lists and collect fields
+//         const user = await USER.findById(userId).select('FavouriteAudio FavouriteVideo FavouriteGallery SpinAudio SpinVideo SpinGallery');
+//         if (!user) {
+//             throw new Error('User not found');
+//         }
+
+//         let data;
+//         let favoriteList;
+//         let collectField;
+//         let premiumField; // To handle category-specific premium field
+
+//         // Fetch data based on CategoryId
+//         switch (req.body.CategoryId) {
+//             case '1': // Audio
+//                 data = await AUDIO.find({ CharacterId: req.body.CharacterId }).select('-__v -CharacterId -_id');
+//                 favoriteList = user.FavouriteAudio;
+//                 collectField = 'SpinAudio';
+//                 premiumField = 'AudioPremium'; 
+//                 if (!data || data.length === 0) {
+//                     throw new Error('Audio Not Found');
+//                 }
+//                 break;
+//             case '2': // Video
+//                 data = await VIDEO.find({ CharacterId: req.body.CharacterId }).select('-__v -CharacterId -_id');
+//                 favoriteList = user.FavouriteVideo;
+//                 collectField = 'SpinVideo';
+//                 premiumField = 'VideoPremium'; 
+//                 if (!data || data.length === 0) {
+//                     throw new Error('Video Not Found');
+//                 }
+//                 break;
+//             case '3': // Gallery
+//                 data = await GALLERY.find({ CharacterId: req.body.CharacterId }).select('-__v -CharacterId -_id');
+//                 favoriteList = user.FavouriteGallery;
+//                 collectField = 'SpinGallery';
+//                 premiumField = 'GalleryPremium';
+//                 if (!data || data.length === 0) {
+//                     throw new Error('Gallery Image Not Found');
+//                 }
+//                 break;
+//             default:
+//                 throw new Error('Invalid Category');
+//         }
+
+//         let dataWithUpdatedStatus
+//          dataWithUpdatedStatus = data.map((item) => {
+//             const itemObject = item.toObject();
+
+//             let updatedItem = { ...itemObject, isFavorite: favoriteList.includes(item.ItemId) };
+
+//             if (user[collectField].includes(item.ItemId)) {
+//                 updatedItem[premiumField] = false; // If collected, set premium to false
+//             } else if (item[premiumField] !== undefined) {
+//                 updatedItem[premiumField] = item[premiumField]; // Use category-specific premium field
+//             }
+
+
+//             return updatedItem;
+//         });
+
+//         if (req.body.collect) {
+//             const collectNumber = parseInt(req.body.collect);
+//             if (isNaN(collectNumber)) {
+//                 throw new Error('Invalid collect value');
+//             }
+//             if (!user[collectField].includes(collectNumber)) {
+//                 await USER.findByIdAndUpdate(userId, { $addToSet: { [collectField]: collectNumber } });
+//             }
+
+//              dataWithUpdatedStatus = data.map((item) => {
+//                 const itemObject = item.toObject();
+    
+//                 let updatedItem = { ...itemObject, isFavorite: favoriteList.includes(item.ItemId) };
+    
+//                 if (user[collectField].includes(item.ItemId)) {
+//                     updatedItem[premiumField] = false; // If collected, set premium to false
+//                 } else if (item[premiumField] !== undefined) {
+//                     updatedItem[premiumField] = item[premiumField]; // Use category-specific premium field
+//                 }
+    
+    
+//                 return updatedItem;
+//             });
+//         }
+
+//         res.status(200).json({
+//             status: 1,
+//             message: 'Data Found Successfully',
+//             data: dataWithUpdatedStatus,
+//         });
+//     } catch (error) {
+//         console.error('Error in FoundAudio:', error);
+//         res.status(400).json({
+//             status: 0,
+//             message: error.message,
+//         });
+//     }
+// };
