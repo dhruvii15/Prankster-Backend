@@ -19,6 +19,7 @@ const userData = new Schema({
     // SpinVideo: [String],
     // SpinGallery: [String],
     // SpinCover: [String]
-});
+},
+{ timestamps: true });
 
 module.exports = mongoose.model('register',userData)

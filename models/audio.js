@@ -13,6 +13,11 @@ const audioSchemaData = new Schema({
     },
     CharacterId: Number,
     ItemId: Number,
+    Hide: 
+    {
+        type: Boolean,
+        required: true
+    }
 });
 const AUDIO = mongoose.model('Audio', audioSchemaData);
 

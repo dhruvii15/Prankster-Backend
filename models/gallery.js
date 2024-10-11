@@ -12,6 +12,11 @@ const gallerySchemaData = new Schema({
     },
     CharacterId: Number,
     ItemId: Number,
+    Hide: 
+    {
+        type: Boolean,
+        required: true
+    }
 });
 const GALLERY = mongoose.model('Gallery', gallerySchemaData);
 

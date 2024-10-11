@@ -13,6 +13,11 @@ const videoSchemaData = new Schema({
     },
     CharacterId: Number,
     ItemId: Number,
+    Hide: 
+    {
+        type: Boolean,
+        required: true
+    }
 });
 const VIDEO = mongoose.model('Video', videoSchemaData);
 

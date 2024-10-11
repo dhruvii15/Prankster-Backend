@@ -69,21 +69,24 @@ exports.FoundAudio = async function (req, res, next) {
         let favoriteList;
         switch (req.body.CategoryId) {
             case '1':
-                data = await AUDIO.find({ CharacterId: req.body.CharacterId }).select('-__v -CharacterId -_id');
+                // Only find audio items where Hide is false
+                data = await AUDIO.find({ CharacterId: req.body.CharacterId, Hide: false }).select('-__v -CharacterId -_id -Hide');
                 favoriteList = user.FavouriteAudio;
                 if (!data || data.length === 0) {
                     throw new Error('Audio Not Found');
                 }
                 break;
             case '2':
-                data = await VIDEO.find({ CharacterId: req.body.CharacterId }).select('-__v -CharacterId -_id');
+                // Only find video items where Hide is false
+                data = await VIDEO.find({ CharacterId: req.body.CharacterId, Hide: false }).select('-__v -CharacterId -_id -Hide');
                 favoriteList = user.FavouriteVideo;
                 if (!data || data.length === 0) {
                     throw new Error('Video Not Found');
                 }
                 break;
             case '3':
-                data = await GALLERY.find({ CharacterId: req.body.CharacterId }).select('-__v -CharacterId -_id');
+                // Only find gallery images where Hide is false
+                data = await GALLERY.find({ CharacterId: req.body.CharacterId, Hide: false }).select('-__v -CharacterId -_id -Hide');
                 favoriteList = user.FavouriteGallery;
                 if (!data || data.length === 0) {
                     throw new Error('Gallery Image Not Found');
@@ -112,6 +115,7 @@ exports.FoundAudio = async function (req, res, next) {
         });
     }
 };
+
 
 
 exports.ReadAudio = async function (req, res, next) {
