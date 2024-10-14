@@ -77,7 +77,7 @@ exports.Favourite = async function (req, res, next) {
         }
 
         if (!req.body.ItemId || !req.body.Favourite || !req.body.CategoryId) {
-            throw new Error('ItemId & Favourite , CategoryId value are required')
+            throw new Error('ItemId, Favourite, and CategoryId values are required');
         }
 
         const userId = req.User;
@@ -85,10 +85,6 @@ exports.Favourite = async function (req, res, next) {
 
         if (!userId) {
             throw new Error('Invalid user ID');
-        }
-
-        if (!ItemId) {
-            throw new Error('Item ID is required');
         }
 
         let favoriteField;
@@ -106,36 +102,34 @@ exports.Favourite = async function (req, res, next) {
                 favoriteField = "FavouriteCover";
                 break;
             default:
-                throw new Error('Invalid CategoryId. Must be 1 for Audio, 2 for Video, 3 for Gallery , or 4 for Cover');
+                throw new Error('Invalid CategoryId. Must be 1 for Audio, 2 for Video, 3 for Gallery, or 4 for Cover');
         }
 
-        let updateOperation;
+        const user = await USER.findById(userId);
+
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        // Check if the item is already in the favorite list
+        const isItemInArray = user[favoriteField].includes(ItemId);
+
         if (Favourite === "true") {
-            updateOperation = { $push: { [favoriteField]: ItemId } };
+            if (!isItemInArray) {
+                await USER.findByIdAndUpdate(
+                    userId,
+                    { $push: { [favoriteField]: ItemId } },
+                    { new: true, runValidators: true }
+                );
+            }
         } else if (Favourite === "false") {
-            updateOperation = { $pull: { [favoriteField]: ItemId } };
+            await USER.findByIdAndUpdate(
+                userId,
+                { $pull: { [favoriteField]: ItemId } },
+                { new: true, runValidators: true }
+            );
         } else {
             throw new Error('Invalid Favourite value. Must be "true" or "false".');
-        }
-
-        const updatedUser = await USER.findByIdAndUpdate(
-            userId,
-            updateOperation,
-            { new: true, runValidators: true }
-        );
-
-        if (!updatedUser) {
-            throw new Error('User not found or update failed');
-        }
-
-        // Check if the item was actually added or removed
-        const isItemInArray = updatedUser[favoriteField].includes(ItemId);
-        const wasOperationSuccessful =
-            (Favourite === "true" && isItemInArray) ||
-            (Favourite === "false" && !isItemInArray);
-
-        if (!wasOperationSuccessful) {
-            throw new Error('Failed to update favorites');
         }
 
         res.status(200).json({
@@ -152,6 +146,7 @@ exports.Favourite = async function (req, res, next) {
         });
     }
 };
+
 
 exports.FavouriteRead = async function (req, res, next) {
     try {
@@ -171,33 +166,33 @@ exports.FavouriteRead = async function (req, res, next) {
         if (!user) {
             throw new Error('User not found');
         }
-        
+
         var favourite;
 
         switch (req.body.CategoryId) {
             case "1":
-                 favourite = await AUDIO.find({ ItemId: { $in: user.FavouriteAudio } }).select('-_id -__v');
-                 if (!favourite || favourite.length === 0) {
+                favourite = await AUDIO.find({ ItemId: { $in: user.FavouriteAudio } }).select('-_id -__v');
+                if (!favourite || favourite.length === 0) {
                     throw new Error('Favourite audio not found')
-                 }
+                }
                 break;
             case "2":
-                 favourite = await VIDEO.find({ ItemId: { $in: user.FavouriteVideo } }).select('-_id -__v');
-                 if (!favourite || favourite.length === 0) {
+                favourite = await VIDEO.find({ ItemId: { $in: user.FavouriteVideo } }).select('-_id -__v');
+                if (!favourite || favourite.length === 0) {
                     throw new Error('Favourite video not found')
-                 }
+                }
                 break;
             case "3":
                 favourite = await GALLERY.find({ ItemId: { $in: user.FavouriteGallery } }).select('-_id -__v');
                 if (!favourite || favourite.length === 0) {
                     throw new Error('Favourite gallery not found')
-                 }
+                }
                 break;
             case "4":
                 favourite = await COVER.find({ ItemId: { $in: user.FavouriteCover } }).select('-_id -__v');
                 if (!favourite || favourite.length === 0) {
                     throw new Error('Favourite cover not found')
-                 }
+                }
                 break;
             default:
                 throw new Error('Invalid CategoryId. Must be 1 for Audio, 2 for Video, 3 for Gallery , or 4 for Cover');
@@ -231,12 +226,12 @@ exports.Update = async function (req, res, next) {
         if (req.body.Premium === undefined) {
             throw new Error('Premium value is required');
         }
-        
+
         // if (typeof req.body.Premium !== 'boolean') {
         //     throw new Error('Premium value must be a boolean');
         // }
-        
-      await USER.findByIdAndUpdate(req.User, req.body, { new: true });
+
+        await USER.findByIdAndUpdate(req.User, req.body, { new: true });
 
         res.status(200).json({
             status: 1,
