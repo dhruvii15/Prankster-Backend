@@ -5,6 +5,9 @@ const USER = require('../models/users');
 
 exports.CreateAudio = async function (req, res, next) {
     try {
+        if (req.headers['x-forwarded-proto'] !== 'https') {
+            throw new Error('Please use HTTPS protocol')
+        }
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
         };
@@ -47,6 +50,9 @@ exports.CreateAudio = async function (req, res, next) {
 
 exports.FoundAudio = async function (req, res, next) {
     try {
+        if (req.headers['x-forwarded-proto'] !== 'https') {
+            throw new Error('Please use HTTPS protocol')
+        }
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
         };
@@ -120,6 +126,9 @@ exports.FoundAudio = async function (req, res, next) {
 
 exports.ReadAudio = async function (req, res, next) {
     try {
+        if (req.headers['x-forwarded-proto'] !== 'https') {
+            throw new Error('Please use HTTPS protocol')
+        }
         const audioData = await AUDIO.find();
 
         res.status(200).json({
@@ -138,6 +147,9 @@ exports.ReadAudio = async function (req, res, next) {
 
 exports.UpdateAudio = async function (req, res, next) {
     try {
+        if (req.headers['x-forwarded-proto'] !== 'https') {
+            throw new Error('Please use HTTPS protocol')
+        }
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
         };
@@ -174,6 +186,9 @@ exports.UpdateAudio = async function (req, res, next) {
 
 exports.DeleteAudio = async function (req, res, next) {
     try {
+        if (req.headers['x-forwarded-proto'] !== 'https') {
+            throw new Error('Please use HTTPS protocol')
+        }
         await AUDIO.findByIdAndDelete(req.params.id);
         res.status(204).json({
             status: 1,
@@ -191,6 +206,9 @@ exports.DeleteAudio = async function (req, res, next) {
 
 // exports.FoundAudio = async function (req, res, next) {
 //     try {
+//      if (req.headers['x-forwarded-proto'] !== 'https') {
+//            throw new Error('Please use HTTPS protocol')
+//          }
 //         const hasWhitespaceInKey = (obj) => {
 //             return Object.keys(obj).some((key) => /\s/.test(key));
 //         };

@@ -1,20 +1,26 @@
-# Use Node.js LTS version
-FROM node:latest
+# Use a newer Node runtime as the parent image
+FROM node:20
 
-# Set the working directory inside the container
+# Set the working directory in the container to /app
 WORKDIR /app
 
-# Copy package.json and package-lock.json to the container
+# Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
 
-# Install dependencies
+# Install any needed packages specified in package.json
 RUN npm install
 
-# Copy the entire project directory into the container
+# Install nodemon globally
+RUN npm install -g nodemon
+
+# Bundle app source inside the docker image
 COPY . .
 
-# Expose port 3000
-EXPOSE 5001
+# Make port 5000 available to the world outside this container
+EXPOSE 5000
 
-# Start the application
-CMD ["npm", "start"]
+# Define environment variable
+ENV NODE_ENV=production
+
+# Run app.js using nodemon when the container launches
+CMD ["nodemon", "app.js"]

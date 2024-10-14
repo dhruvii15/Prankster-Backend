@@ -2,6 +2,9 @@ const VIDEO = require('../models/video')
 
 exports.CreateVideo = async function (req, res, next) {
     try {
+        if (req.headers['x-forwarded-proto'] !== 'https') {
+            throw new Error('Please use HTTPS protocol')
+        }
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
         };
@@ -45,6 +48,9 @@ exports.CreateVideo = async function (req, res, next) {
 
 exports.ReadVideo = async function (req, res, next) {
     try {
+        if (req.headers['x-forwarded-proto'] !== 'https') {
+            throw new Error('Please use HTTPS protocol')
+        }
         const VideoData = await VIDEO.find();
 
         res.status(200).json({
@@ -63,6 +69,9 @@ exports.ReadVideo = async function (req, res, next) {
 
 exports.UpdateVideo = async function (req, res, next) {
     try {
+        if (req.headers['x-forwarded-proto'] !== 'https') {
+            throw new Error('Please use HTTPS protocol')
+        }
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
         };
@@ -99,6 +108,9 @@ exports.UpdateVideo = async function (req, res, next) {
 
 exports.DeleteVideo = async function (req, res, next) {
     try {
+        if (req.headers['x-forwarded-proto'] !== 'https') {
+            throw new Error('Please use HTTPS protocol')
+        }
         await VIDEO.findByIdAndDelete(req.params.id);
         res.status(204).json({
             status: 1,

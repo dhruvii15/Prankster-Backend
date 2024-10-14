@@ -29,6 +29,9 @@ exports.sequre = async function (req, res, next) {
 //ADMIN
 exports.AdminSignup = async function (req, res, next) {
   try {
+    if (req.headers['x-forwarded-proto'] !== 'https') {
+        throw new Error('Please use HTTPS protocol')
+    }
     if (!req.body.email || !req.body.pass) {
         throw new Error('Email & Pass value are required')
       }
@@ -53,6 +56,9 @@ exports.AdminSignup = async function (req, res, next) {
 
 exports.AdminLogin = async function (req, res, next) {
   try {
+    if (req.headers['x-forwarded-proto'] !== 'https') {
+        throw new Error('Please use HTTPS protocol')
+    }
     if (!req.body.email || !req.body.pass) {
       throw new Error('Enter All Fields')
     }
@@ -81,6 +87,9 @@ exports.AdminLogin = async function (req, res, next) {
 
 exports.AdminRead = async function (req, res, next) {
   try {
+    if (req.headers['x-forwarded-proto'] !== 'https') {
+        throw new Error('Please use HTTPS protocol')
+    }
     const dataFind = await ADMIN.find();
     res.status(200).json({
       status: "Success!",
@@ -99,6 +108,9 @@ exports.AdminRead = async function (req, res, next) {
 
 exports.AdminUpdate = async function (req, res, next) {
   try {
+    if (req.headers['x-forwarded-proto'] !== 'https') {
+        throw new Error('Please use HTTPS protocol')
+    }
     let dataUpdate = await ADMIN.findByIdAndUpdate(req.params.id, req.body, { new: true })
 
     res.status(201).json({
@@ -118,6 +130,9 @@ exports.AdminUpdate = async function (req, res, next) {
 
 exports.Forgetpass = async function (req, res, next) {
   try {
+    if (req.headers['x-forwarded-proto'] !== 'https') {
+        throw new Error('Please use HTTPS protocol')
+    }
       if (!req.body.email || !req.body.confirmpass || !req.body.pass) {
           throw new Error('Please enter fields')
       }

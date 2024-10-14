@@ -8,6 +8,9 @@
 
 // exports.Spin = async function (req, res, next) {
 //   try {
+    // if (req.headers['x-forwarded-proto'] !== 'https') {
+    //     throw new Error('Please use HTTPS protocol')
+    // }
 //     // Check for whitespace in field names
 //     const hasWhitespaceInKey = obj => {
 //       return Object.keys(obj).some(key => /\s/.test(key));
@@ -90,6 +93,9 @@
 
 // exports.Count = async function (req, res, next) {
 //     try {
+    // if (req.headers['x-forwarded-proto'] !== 'https') {
+    //     throw new Error('Please use HTTPS protocol')
+    // }
 //         const spinData = await USER.findById(req.User);
 
 //         if (!spinData) {

@@ -3,19 +3,10 @@ services:
   app:
     build: .
     ports:
-      - "5000:5001"
+      - "5001:5000"  # હોસ્ટના 5001 પોર્ટને કન્ટેનરના 5000 પોર્ટ સાથે મેપ કર્યું
     volumes:
       - .:/app
-    depends_on:
-      - mongo
     environment:
       - MONGO_URL=mongodb+srv://dhruviplexustechnology:FvF0bDGv8nh3qBmI@lol.chmjk.mongodb.net/Prankster?retryWrites=true&w=majority
+      - PORT=5000  # કન્ટેનરની અંદર એપ્લિકેશન હજુ પણ 5000 પોર્ટ પર ચાલશે
     command: nodemon app.js
-
-  mongo:
-    image: mongo:latest
-    container_name: mongo
-    ports:
-      - "27017:27017"
-    volumes:
-      - ./data:/data/db

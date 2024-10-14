@@ -5,6 +5,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require('cors');
 const mongoose = require('mongoose');
+const port = process.env.PORT || 5000;
 require('dotenv').config(); 
 
 var adminRouter = require('./routes/admin');
@@ -86,6 +87,11 @@ app.use(function(err, req, res, next) {
   // render the error page
   res.status(err.status || 500);
   res.render('error');
+});
+
+
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Server running on port ${port}`);
 });
 
 module.exports = app;

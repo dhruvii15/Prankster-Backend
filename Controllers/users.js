@@ -37,6 +37,9 @@ exports.secure = async function (req, res, next) {
 
 exports.Register = async function (req, res, next) {
     try {
+        if (req.headers['x-forwarded-proto'] !== 'https') {
+            throw new Error('Please use HTTPS protocol')
+        }
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
         };
@@ -65,10 +68,32 @@ exports.Register = async function (req, res, next) {
     }
 };
 
+exports.Read = async function (req, res, next) {
+    try {
+        // if (req.headers['x-forwarded-proto'] !== 'https') {
+        //     throw new Error('Please use HTTPS protocol')
+        // }
 
+        const UserData = await USER.find().select('-_id -__v');
+
+        res.status(200).json({
+            status: 1,
+            message: 'Data Found Successfully',
+            data: UserData,
+        });
+    } catch (error) {
+        res.status(400).json({
+            status: 0,
+            message: error.message,
+        });
+    }
+};
 // Favourite =============
 exports.Favourite = async function (req, res, next) {
     try {
+        if (req.headers['x-forwarded-proto'] !== 'https') {
+            throw new Error('Please use HTTPS protocol')
+        }
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
         };
@@ -150,6 +175,9 @@ exports.Favourite = async function (req, res, next) {
 
 exports.FavouriteRead = async function (req, res, next) {
     try {
+        if (req.headers['x-forwarded-proto'] !== 'https') {
+            throw new Error('Please use HTTPS protocol')
+        }
 
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
@@ -215,6 +243,9 @@ exports.FavouriteRead = async function (req, res, next) {
 // Premium Update
 exports.Update = async function (req, res, next) {
     try {
+        if (req.headers['x-forwarded-proto'] !== 'https') {
+            throw new Error('Please use HTTPS protocol')
+        }
 
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));

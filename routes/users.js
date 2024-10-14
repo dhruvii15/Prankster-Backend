@@ -23,6 +23,8 @@ const upload = multer({ storage: storage })
 /* GET user listing. */
 router.post('/register' , upload.none(), userControllers.Register);
 
+router.post('/users' , upload.none(), userControllers.Read);
+
 // Premium Update
 router.post('/premium', userControllers.secure, upload.none(), userControllers.Update);
 
