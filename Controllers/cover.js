@@ -3,9 +3,6 @@ const USER = require('../models/users')
 
 exports.Create = async function (req, res, next) {
     try {
-        if (req.headers['x-forwarded-proto'] !== 'https') {
-            throw new Error('Please use HTTPS protocol')
-        }
         const filename = req.file.filename.replace(/\s+/g, '');  // Remove all spaces
         // req.body.CoverURL = `https://lolcards.link/api/public/images/cover/${filename}`;
 
@@ -46,9 +43,6 @@ exports.Create = async function (req, res, next) {
 
 exports.Emoji = async function (req, res, next) {
     try {
-        if (req.headers['x-forwarded-proto'] !== 'https') {
-            throw new Error('Please use HTTPS protocol')
-        }
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
         };
@@ -105,9 +99,6 @@ exports.Emoji = async function (req, res, next) {
 
 exports.Realistic = async function (req, res, next) {
     try {
-        if (req.headers['x-forwarded-proto'] !== 'https') {
-            throw new Error('Please use HTTPS protocol')
-        }
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
         };
@@ -157,9 +148,6 @@ exports.Realistic = async function (req, res, next) {
 
 exports.Read = async function (req, res, next) {
     try {
-        if (req.headers['x-forwarded-proto'] !== 'https') {
-            throw new Error('Please use HTTPS protocol')
-        }
         const coverData = await COVER.find();
 
         res.status(200).json({
@@ -178,9 +166,6 @@ exports.Read = async function (req, res, next) {
 
 exports.Update = async function (req, res, next) {
     try {
-        if (req.headers['x-forwarded-proto'] !== 'https') {
-            throw new Error('Please use HTTPS protocol')
-        }
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
         };
@@ -210,9 +195,6 @@ exports.Update = async function (req, res, next) {
 
 exports.Delete = async function (req, res, next) {
     try {
-        if (req.headers['x-forwarded-proto'] !== 'https') {
-            throw new Error('Please use HTTPS protocol')
-        }
         await COVER.findByIdAndDelete(req.params.id);
         res.status(204).json({
             status: 1,

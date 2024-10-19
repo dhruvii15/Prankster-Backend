@@ -5,9 +5,8 @@ const USER = require('../models/users');
 
 exports.CreateAudio = async function (req, res, next) {
     try {
-        if (req.headers['x-forwarded-proto'] !== 'https') {
-            throw new Error('Please use HTTPS protocol')
-        }
+        console.log(req.body);
+        
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
         };
@@ -50,85 +49,99 @@ exports.CreateAudio = async function (req, res, next) {
 
 exports.FoundAudio = async function (req, res, next) {
     try {
-        if (req.headers['x-forwarded-proto'] !== 'https') {
-            throw new Error('Please use HTTPS protocol')
-        }
-        const hasWhitespaceInKey = obj => {
-            return Object.keys(obj).some(key => /\s/.test(key));
-        };
-        if (hasWhitespaceInKey(req.body)) {
-            throw new Error('Field names must not contain whitespace.');
-        }
-        if (!req.body.CharacterId || !req.body.CategoryId) {
-            throw new Error('CharacterId & CategoryId values are required.');
-        }
-        const userId = req.User; // Assuming this is set in your authentication middleware
-        if (!userId) {
-            throw new Error('User not authenticated');
-        }
-        // Fetch user's favorite lists
-        const user = await USER.findById(userId).select('FavouriteAudio FavouriteVideo FavouriteGallery');
-        if (!user) {
-            throw new Error('User not found');
-        }
-        let data;
-        let favoriteList;
-        switch (req.body.CategoryId) {
-            case '1':
-                // Only find audio items where Hide is false
-                data = await AUDIO.find({ CharacterId: req.body.CharacterId, Hide: false }).select('-__v -CharacterId -_id -Hide');
-                favoriteList = user.FavouriteAudio;
-                if (!data || data.length === 0) {
-                    throw new Error('Audio Not Found');
-                }
-                break;
-            case '2':
-                // Only find video items where Hide is false
-                data = await VIDEO.find({ CharacterId: req.body.CharacterId, Hide: false }).select('-__v -CharacterId -_id -Hide');
-                favoriteList = user.FavouriteVideo;
-                if (!data || data.length === 0) {
-                    throw new Error('Video Not Found');
-                }
-                break;
-            case '3':
-                // Only find gallery images where Hide is false
-                data = await GALLERY.find({ CharacterId: req.body.CharacterId, Hide: false }).select('-__v -CharacterId -_id -Hide');
-                favoriteList = user.FavouriteGallery;
-                if (!data || data.length === 0) {
-                    throw new Error('Gallery Image Not Found');
-                }
-                break;
-            default:
-                throw new Error('Invalid Category');
-        }
-
-        // Add favorite status to each item
-        const dataWithFavoriteStatus = data.map(item => ({
-            ...item.toObject(),
-            isFavorite: favoriteList.includes(item.ItemId)
-        }));
-        
-        res.status(200).json({
-            status: 1,
-            message: 'Data Found Successfully',
-            data: dataWithFavoriteStatus,
-        });
+      const hasWhitespaceInKey = obj => {
+        return Object.keys(obj).some(key => /\s/.test(key));
+      };
+  
+      if (hasWhitespaceInKey(req.body)) {
+        throw new Error('Field names must not contain whitespace.');
+      }
+  
+      if (!req.body.CharacterId || !req.body.CategoryId) {
+        throw new Error('CharacterId & CategoryId values are required.');
+      }
+  
+      const userId = req.User; // Assuming this is set in your authentication middleware
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+  
+      // Fetch user's favorite lists
+      const user = await USER.findById(userId).select('FavouriteAudio FavouriteVideo FavouriteGallery');
+      if (!user) {
+        throw new Error('User not found');
+      }
+  
+      let data;
+      let favoriteList;
+      let fileField, nameField, imageField, premiumField;
+  
+      switch (req.body.CategoryId) {
+        case '1':
+          data = await AUDIO.find({ CharacterId: req.body.CharacterId, Hide: false }).select('-__v -CharacterId -_id -Hide');
+          favoriteList = user.FavouriteAudio;
+          fileField = 'Audio';
+          nameField = 'AudioName';
+          imageField = 'AudioImage';
+          premiumField = 'AudioPremium';
+          if (!data || data.length === 0) {
+            throw new Error('Audio Not Found');
+          }
+          break;
+        case '2':
+          data = await VIDEO.find({ CharacterId: req.body.CharacterId, Hide: false }).select('-__v -CharacterId -_id -Hide');
+          favoriteList = user.FavouriteVideo;
+          fileField = 'Video';
+          nameField = 'VideoName';
+          imageField = 'VideoImage';
+          premiumField = 'VideoPremium';
+          if (!data || data.length === 0) {
+            throw new Error('Video Not Found');
+          }
+          break;
+        case '3':
+          data = await GALLERY.find({ CharacterId: req.body.CharacterId, Hide: false }).select('-__v -CharacterId -_id -Hide');
+          favoriteList = user.FavouriteGallery;
+          fileField = 'Gallery';
+          nameField = 'GalleryName';
+          imageField = 'GalleryImage';
+          premiumField = 'GalleryPremium';
+          if (!data || data.length === 0) {
+            throw new Error('Gallery Image Not Found');
+          }
+          break;
+        default:
+          throw new Error('Invalid Category');
+      }
+  
+      // Add favorite status to each item
+      const dataWithFavoriteStatus = data.map(item => ({
+        File: item[fileField],
+        Name: item[nameField],
+        Image: item[imageField],
+        Premium: item[premiumField],
+        ItemId: item.ItemId,
+        isFavorite: favoriteList.includes(item.ItemId)
+      }));
+  
+      res.status(200).json({
+        status: 1,
+        message: 'Data Found Successfully',
+        data: dataWithFavoriteStatus,
+      });
     } catch (error) {
-        console.error('Error in FoundAudio:', error);
-        res.status(400).json({
-            status: 0,
-            message: error.message,
-        });
+      console.error('Error in FoundAudio:', error);
+      res.status(400).json({
+        status: 0,
+        message: error.message,
+      });
     }
-};
+  };
 
 
 
 exports.ReadAudio = async function (req, res, next) {
     try {
-        if (req.headers['x-forwarded-proto'] !== 'https') {
-            throw new Error('Please use HTTPS protocol')
-        }
         const audioData = await AUDIO.find();
 
         res.status(200).json({
@@ -147,9 +160,6 @@ exports.ReadAudio = async function (req, res, next) {
 
 exports.UpdateAudio = async function (req, res, next) {
     try {
-        if (req.headers['x-forwarded-proto'] !== 'https') {
-            throw new Error('Please use HTTPS protocol')
-        }
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
         };
@@ -186,9 +196,6 @@ exports.UpdateAudio = async function (req, res, next) {
 
 exports.DeleteAudio = async function (req, res, next) {
     try {
-        if (req.headers['x-forwarded-proto'] !== 'https') {
-            throw new Error('Please use HTTPS protocol')
-        }
         await AUDIO.findByIdAndDelete(req.params.id);
         res.status(204).json({
             status: 1,

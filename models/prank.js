@@ -9,6 +9,7 @@ const prankSchemaData = new Schema({
     File: String,
     Type: String,
     Name: String,
+    Image: String,
     View: {
         type: Number,
         default: 0

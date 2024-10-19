@@ -2,9 +2,6 @@ const GALLERY = require('../models/gallery')
 
 exports.CreateGallery = async function (req, res, next) {
     try {
-        if (req.headers['x-forwarded-proto'] !== 'https') {
-            throw new Error('Please use HTTPS protocol')
-        }
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
         };
@@ -46,9 +43,6 @@ exports.CreateGallery = async function (req, res, next) {
 
 exports.ReadGallery = async function (req, res, next) {
     try {
-        if (req.headers['x-forwarded-proto'] !== 'https') {
-            throw new Error('Please use HTTPS protocol')
-        }
         const GalleryData = await GALLERY.find();
 
         res.status(200).json({
@@ -67,9 +61,6 @@ exports.ReadGallery = async function (req, res, next) {
 
 exports.UpdateGallery = async function (req, res, next) {
     try {
-        if (req.headers['x-forwarded-proto'] !== 'https') {
-            throw new Error('Please use HTTPS protocol')
-        }
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
         };
@@ -101,9 +92,6 @@ exports.UpdateGallery = async function (req, res, next) {
 
 exports.DeleteGallery = async function (req, res, next) {
     try {
-        if (req.headers['x-forwarded-proto'] !== 'https') {
-            throw new Error('Please use HTTPS protocol')
-        }
         await GALLERY.findByIdAndDelete(req.params.id);
         res.status(204).json({
             status: 1,

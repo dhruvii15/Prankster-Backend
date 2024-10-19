@@ -5,9 +5,6 @@ const CHARACTER = require('../models/character')
 
 exports.Create = async function (req, res, next) {
     try {
-        if (req.headers['x-forwarded-proto'] !== 'https') {
-            throw new Error('Please use HTTPS protocol')
-        }
         const filename = req.file.filename.replace(/\s+/g, '');  // Remove all spaces
 
         const hasWhitespaceInKey = obj => {
@@ -47,9 +44,6 @@ exports.Create = async function (req, res, next) {
 
 exports.Found = async function (req, res, next) {
     try {
-        if (req.headers['x-forwarded-proto'] !== 'https') {
-            throw new Error('Please use HTTPS protocol')
-        }
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
         };
@@ -103,9 +97,6 @@ exports.Found = async function (req, res, next) {
 
 exports.Read = async function (req, res, next) {
     try {
-        if (req.headers['x-forwarded-proto'] !== 'https') {
-            throw new Error('Please use HTTPS protocol')
-        }
         const characterData = await CHARACTER.find();
 
         res.status(200).json({
@@ -124,9 +115,6 @@ exports.Read = async function (req, res, next) {
 
 exports.Update = async function (req, res, next) {
     try {
-        if (req.headers['x-forwarded-proto'] !== 'https') {
-            throw new Error('Please use HTTPS protocol')
-        }
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
         };
@@ -156,9 +144,6 @@ exports.Update = async function (req, res, next) {
 
 exports.Delete = async function (req, res, next) {
     try {
-        if (req.headers['x-forwarded-proto'] !== 'https') {
-            throw new Error('Please use HTTPS protocol')
-        }
         // Find and delete the character by ID
         const Character = await CHARACTER.findByIdAndDelete(req.params.id);
 
@@ -166,29 +151,15 @@ exports.Delete = async function (req, res, next) {
             throw new Error('Character Not Found');
         }
 
-        let deleteResult;
-
         switch (Character.Category) {
             case 'audio':
                 deleteResult = await AUDIO.deleteMany({ CharacterId: Character.CharacterId });
-
-                if (deleteResult.deletedCount === 0) {
-                    throw new Error('No Audio Found to Delete');
-                }
                 break;
             case 'video':
                 deleteResult = await VIDEO.deleteMany({ CharacterId: Character.CharacterId });
-
-                if (deleteResult.deletedCount === 0) {
-                    throw new Error('No Video Found to Delete');
-                }
                 break;
             case 'gallery':
                 deleteResult = await GALLERY.deleteMany({ CharacterId: Character.CharacterId });
-
-                if (deleteResult.deletedCount === 0) {
-                    throw new Error('No Gallery Images Found to Delete');
-                }
                 break;
             default:
                 throw new Error('Invalid Category');

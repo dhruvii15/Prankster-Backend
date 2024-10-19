@@ -29,13 +29,10 @@ exports.sequre = async function (req, res, next) {
 //ADMIN
 exports.AdminSignup = async function (req, res, next) {
   try {
-    if (req.headers['x-forwarded-proto'] !== 'https') {
-        throw new Error('Please use HTTPS protocol')
-    }
     if (!req.body.email || !req.body.pass) {
-        throw new Error('Email & Pass value are required')
-      }
-  
+      throw new Error('Email & Pass value are required')
+    }
+
 
     req.body.pass = await bcrypt.hash(req.body.pass, 8)
     let dataCreate = await ADMIN.create(req.body)
@@ -56,9 +53,6 @@ exports.AdminSignup = async function (req, res, next) {
 
 exports.AdminLogin = async function (req, res, next) {
   try {
-    if (req.headers['x-forwarded-proto'] !== 'https') {
-        throw new Error('Please use HTTPS protocol')
-    }
     if (!req.body.email || !req.body.pass) {
       throw new Error('Enter All Fields')
     }
@@ -87,9 +81,6 @@ exports.AdminLogin = async function (req, res, next) {
 
 exports.AdminRead = async function (req, res, next) {
   try {
-    if (req.headers['x-forwarded-proto'] !== 'https') {
-        throw new Error('Please use HTTPS protocol')
-    }
     const dataFind = await ADMIN.find();
     res.status(200).json({
       status: "Success!",
@@ -108,9 +99,6 @@ exports.AdminRead = async function (req, res, next) {
 
 exports.AdminUpdate = async function (req, res, next) {
   try {
-    if (req.headers['x-forwarded-proto'] !== 'https') {
-        throw new Error('Please use HTTPS protocol')
-    }
     let dataUpdate = await ADMIN.findByIdAndUpdate(req.params.id, req.body, { new: true })
 
     res.status(201).json({
@@ -130,31 +118,28 @@ exports.AdminUpdate = async function (req, res, next) {
 
 exports.Forgetpass = async function (req, res, next) {
   try {
-    if (req.headers['x-forwarded-proto'] !== 'https') {
-        throw new Error('Please use HTTPS protocol')
+    if (!req.body.email || !req.body.confirmpass || !req.body.pass) {
+      throw new Error('Please enter fields')
     }
-      if (!req.body.email || !req.body.confirmpass || !req.body.pass) {
-          throw new Error('Please enter fields')
-      }
-      if (req.body.pass !== req.body.confirmpass) {
-          throw new Error('Password Is Not Match')
-      }
-      req.body.pass = await bcrypt.hash(req.body.pass, 8)
-      req.body.confirmpass = await bcrypt.hash(req.body.confirmpass, 8)
-      let dataupdate = await ADMIN.findOneAndUpdate({ email: req.body.email }, req.body, { new: true })
+    if (req.body.pass !== req.body.confirmpass) {
+      throw new Error('Password Is Not Match')
+    }
+    req.body.pass = await bcrypt.hash(req.body.pass, 8)
+    req.body.confirmpass = await bcrypt.hash(req.body.confirmpass, 8)
+    let dataupdate = await ADMIN.findOneAndUpdate({ email: req.body.email }, req.body, { new: true })
 
-      if (!dataupdate) {
-          throw new Error('Email id Not Found!')
-      }
-      res.status(201).json({
-          status: 1,
-          message: "Password Change Successfully",
-          data: dataupdate
-      })
+    if (!dataupdate) {
+      throw new Error('Email id Not Found!')
+    }
+    res.status(201).json({
+      status: 1,
+      message: "Password Change Successfully",
+      data: dataupdate
+    })
   } catch (error) {
-      res.status(400).json({
-          status: 0,
-          message: error.message
-      })
+    res.status(400).json({
+      status: 0,
+      message: error.message
+    })
   }
 }

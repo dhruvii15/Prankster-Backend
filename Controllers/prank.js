@@ -25,9 +25,6 @@ async function createUniqueUrl(baseWord) {
 
 exports.Create = async function (req, res, next) {
     try {
-        if (req.headers['x-forwarded-proto'] !== 'https') {
-            throw new Error('Please use HTTPS protocol')
-        }
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
         };
@@ -78,9 +75,6 @@ exports.Create = async function (req, res, next) {
 
 exports.Read = async function (req, res, next) {
     try {
-        if (req.headers['x-forwarded-proto'] !== 'https') {
-            throw new Error('Please use HTTPS protocol')
-        }
         const prankData = await PRANK.find({ UserId: req.User }).select('-_id -__v -UserId');
 
         res.status(201).json({
@@ -98,9 +92,6 @@ exports.Read = async function (req, res, next) {
 
 exports.Open = async function (req, res, next) {
     try {
-        if (req.headers['x-forwarded-proto'] !== 'https') {
-            throw new Error('Please use HTTPS protocol')
-        }
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
         };
