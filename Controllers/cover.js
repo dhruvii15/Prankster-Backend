@@ -3,8 +3,10 @@ const USER = require('../models/users')
 
 exports.Create = async function (req, res, next) {
     try {
-        const filename = req.file.filename.replace(/\s+/g, '');  // Remove all spaces
-        // req.body.CoverURL = `https://lolcards.link/api/public/images/cover/${filename}`;
+        const files = req.files;
+        if (!files || files.length === 0) {
+            throw new Error('At least one CoverURL image is required.');
+        }
 
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
@@ -13,24 +15,34 @@ exports.Create = async function (req, res, next) {
             throw new Error('Field names must not contain whitespace.');
         }
 
-        if (!req.body.CoverURL && !req.body.Category) {
-            throw new Error('CoverURL & Category value are required')
+        if (!req.body.Category) {
+            throw new Error('Category value is required.');
         }
 
-        req.body.CoverURL = `https://pslink.world/api/public/images/cover/${filename}`;
-
-        // Get the highest existing ItemId
+        let savedItems = [];
         const highestItem = await COVER.findOne().sort('-ItemId').exec();
-        const nextId = highestItem ? highestItem.ItemId + 1 : 1;
+        let nextId = highestItem ? highestItem.ItemId + 1 : 1;
 
-        // Assign the new ID to req.body.ItemId
-        req.body.ItemId = nextId;
+        // Process each file and save it to the database
+        for (let i = 0; i < files.length; i++) {
+            const filename = files[i].filename.replace(/\s+/g, '');
 
-        const dataCreate = await COVER.create(req.body);
+            const newCover = {
+                Category: req.body.Category,
+                CoverURL: `https://pslink.world/api/public/images/cover/${filename}`,
+                CoverPremium : req.body.CoverPremium,
+                ItemId: nextId++, // Increment ItemId for each new image
+            };
+
+            // Save each entry to the database
+            const dataCreate = await COVER.create(newCover);
+            savedItems.push(dataCreate); // Collect saved entries
+        }
+
         res.status(201).json({
             status: 1,
             message: 'Data Created Successfully',
-            data: dataCreate,
+            data: savedItems, // Return all saved items
         });
     } catch (error) {
         res.status(400).json({

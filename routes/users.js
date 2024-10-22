@@ -30,7 +30,7 @@ router.post('/premium', userControllers.secure, upload.none(), userControllers.U
 
 
 // Cover page 
-router.post('/cover/create', upload.single('CoverURL'), coverControllers.Create);
+router.post('/cover/create', upload.array('CoverURL', 5), coverControllers.Create);
 
 router.post('/cover/emoji', upload.none() , userControllers.secure , coverControllers.Emoji);
 

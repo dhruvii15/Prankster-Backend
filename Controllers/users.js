@@ -183,10 +183,13 @@ exports.FavouriteRead = async function (req, res, next) {
         }
 
         var favourite;
+        let favoriteList;
+        let fileField, nameField, imageField, premiumField;
 
         switch (req.body.CategoryId) {
             case "1":
                 favourite = await AUDIO.find({ ItemId: { $in: user.FavouriteAudio } }).select('-_id -__v');
+                favoriteList = user.FavouriteAudio;
                 fileField = 'Audio';
                 nameField = 'AudioName';
                 imageField = 'AudioImage';
@@ -197,6 +200,7 @@ exports.FavouriteRead = async function (req, res, next) {
                 break;
             case "2":
                 favourite = await VIDEO.find({ ItemId: { $in: user.FavouriteVideo } }).select('-_id -__v');
+                favoriteList = user.FavouriteVideo;
                 fileField = 'Video';
                 nameField = 'VideoName';
                 imageField = 'VideoImage';
@@ -207,6 +211,7 @@ exports.FavouriteRead = async function (req, res, next) {
                 break;
             case "3":
                 favourite = await GALLERY.find({ ItemId: { $in: user.FavouriteGallery } }).select('-_id -__v');
+                favoriteList = user.FavouriteGallery;
                 fileField = 'Gallery';
                 nameField = 'GalleryName';
                 imageField = 'GalleryImage';
@@ -217,6 +222,7 @@ exports.FavouriteRead = async function (req, res, next) {
                 break;
             case "4":
                 favourite = await COVER.find({ ItemId: { $in: user.FavouriteCover } }).select('-_id -__v');
+                favoriteList = user.FavouriteCover;
                 fileField = 'Cover';
                 nameField = 'CoverName';
                 imageField = 'CoverURL';
@@ -235,7 +241,8 @@ exports.FavouriteRead = async function (req, res, next) {
             Image: item[imageField],
             Premium: item[premiumField],
             ItemId: item.ItemId,
-            CharacterId: item.CharacterId
+            CharacterId: item.CharacterId,
+            isFavorite: favoriteList.includes(item.ItemId)
         }));
 
         res.status(200).json({
