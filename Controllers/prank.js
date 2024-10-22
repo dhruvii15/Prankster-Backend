@@ -32,8 +32,8 @@ exports.Create = async function (req, res, next) {
             throw new Error('Field names must not contain whitespace.');
         }
 
-        if (!req.body.Type || !req.body.Name) {
-            throw new Error('Type and Name are required.');
+        if (!req.body.Type) {
+            throw new Error('Type are required.');
         }
 
         req.body.UserId = req.User;
