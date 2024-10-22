@@ -187,24 +187,40 @@ exports.FavouriteRead = async function (req, res, next) {
         switch (req.body.CategoryId) {
             case "1":
                 favourite = await AUDIO.find({ ItemId: { $in: user.FavouriteAudio } }).select('-_id -__v');
+                fileField = 'Audio';
+                nameField = 'AudioName';
+                imageField = 'AudioImage';
+                premiumField = 'AudioPremium';
                 if (!favourite || favourite.length === 0) {
                     throw new Error('Favourite audio not found')
                 }
                 break;
             case "2":
                 favourite = await VIDEO.find({ ItemId: { $in: user.FavouriteVideo } }).select('-_id -__v');
+                fileField = 'Video';
+                nameField = 'VideoName';
+                imageField = 'VideoImage';
+                premiumField = 'VideoPremium';
                 if (!favourite || favourite.length === 0) {
                     throw new Error('Favourite video not found')
                 }
                 break;
             case "3":
                 favourite = await GALLERY.find({ ItemId: { $in: user.FavouriteGallery } }).select('-_id -__v');
+                fileField = 'Gallery';
+                nameField = 'GalleryName';
+                imageField = 'GalleryImage';
+                premiumField = 'GalleryPremium';
                 if (!favourite || favourite.length === 0) {
                     throw new Error('Favourite gallery not found')
                 }
                 break;
             case "4":
                 favourite = await COVER.find({ ItemId: { $in: user.FavouriteCover } }).select('-_id -__v');
+                fileField = 'Cover';
+                nameField = 'CoverName';
+                imageField = 'CoverURL';
+                premiumField = 'CoverPremium';
                 if (!favourite || favourite.length === 0) {
                     throw new Error('Favourite cover not found')
                 }
@@ -213,10 +229,19 @@ exports.FavouriteRead = async function (req, res, next) {
                 throw new Error('Invalid CategoryId. Must be 1 for Audio, 2 for Video, 3 for Gallery , or 4 for Cover');
         }
 
+        const dataStatus = favourite.map(item => ({
+            File: item[fileField],
+            Name: item[nameField],
+            Image: item[imageField],
+            Premium: item[premiumField],
+            ItemId: item.ItemId,
+            CharacterId: item.CharacterId
+        }));
+
         res.status(200).json({
             status: 1,
             message: 'Data Found Successfully',
-            data: favourite
+            data: dataStatus
         });
     } catch (error) {
         res.status(400).json({

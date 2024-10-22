@@ -2,9 +2,9 @@ const PRANK = require('../models/prank');
 const crypto = require('crypto');
 
 
-function generateUniqueName(baseWord, length = 30) {
+function generateUniqueName(baseWord, length = 15) {
     const randomPart = crypto.randomBytes(length).toString('hex').slice(0, length);
-    return `${baseWord}%&&${randomPart}^$${randomPart}$$%^${randomPart}#%$${randomPart}#${randomPart}`;
+    return `${baseWord}&&${randomPart}$${randomPart}$$${randomPart}&$${randomPart}&${randomPart}&${randomPart}$${randomPart}$$${randomPart}&$${randomPart}&${randomPart}`;
 }
 
 async function isUrlUnique(url) {
@@ -32,17 +32,41 @@ exports.Create = async function (req, res, next) {
             throw new Error('Field names must not contain whitespace.');
         }
 
-        if (!req.files.CoverImage || !req.files.File || !req.body.Type || !req.body.Name) {
-            throw new Error('CoverImage, File, Type, and Name are required.');
+        if (!req.body.Type || !req.body.Name) {
+            throw new Error('Type and Name are required.');
         }
 
         req.body.UserId = req.User;
 
-        const CoverImageFilename = req.files.CoverImage.map((el) => el.filename);
-        const FileFilename = req.files.File.map((el) => el.filename);
+        // Handle CoverImage
+        if (req.files && req.files.CoverImage) {
+            const CoverImageFilename = req.files.CoverImage.map((el) => el.filename);
+            req.body.CoverImage = `https://pslink.world/api/public/images/prank/${CoverImageFilename}`;
+        } else if (typeof req.body.CoverImage === 'string') {
+            req.body.CoverImage = req.body.CoverImage; // Use the string directly
+        } else {
+            throw new Error('CoverImage is required.');
+        }
 
-        req.body.CoverImage = `https://pslink.world/api/public/images/prank/${CoverImageFilename}`;
-        req.body.File = `https://pslink.world/api/public/images/prank/${FileFilename}`;
+        // Handle File
+        if (req.files && req.files.File) {
+            const FileFilename = req.files.File.map((el) => el.filename);
+            req.body.File = `https://pslink.world/api/public/images/prank/${FileFilename}`;
+        } else if (typeof req.body.File === 'string') {
+            req.body.File = req.body.File; // Use the string directly
+        } else {
+            throw new Error('File is required.');
+        }
+
+        // Handle Image
+        if (req.files && req.files.Image) {
+            const ImageFilename = req.files.Image.map((el) => el.filename);
+            req.body.Image = `https://pslink.world/api/public/images/prank/${ImageFilename}`;
+        } else if (typeof req.body.Image === 'string') {
+            req.body.Image = req.body.Image; // Use the string directly
+        } else {
+            throw new Error('Image is required.');
+        }
 
         // Generate and add unique URL
         const baseWord = "prank"; // You can change this or make it dynamic
@@ -55,13 +79,13 @@ exports.Create = async function (req, res, next) {
             CoverImage: dataCreate.CoverImage,
             File: dataCreate.File,
             Type: dataCreate.Type,
-            Name: dataCreate.Name
+            Name: dataCreate.Name,
+            Image: dataCreate.Image
         };
-
 
         res.status(201).json({
             status: 1,
-            message: 'Prank Create Successfully',
+            message: 'Prank Created Successfully',
             data: responseData
         });
     } catch (error) {
@@ -99,15 +123,19 @@ exports.Open = async function (req, res, next) {
             throw new Error('Field names must not contain whitespace.');
         }
 
-        if (!req.body.Link) {
-            throw new Error('Link value are required.');
+        if (!req.body.prankName) {
+            throw new Error('prankName value are required.');
         }
+        
+        const PrankLink  = `https://pslink.world/${req.body.prankName}`
 
-        const prankData = await PRANK.findOne({ Link: req.body.Link }).select('-_id -__v');
+        console.log(PrankLink);
+
+        const prankData = await PRANK.findOne({ Link: PrankLink }).select('-_id -__v');
 
         const newView = prankData.View + 1;
         const updatedData = await PRANK.findOneAndUpdate(
-            { Link: req.body.Link },
+            { Link: PrankLink },
             { View: newView },
             { new: true } // return the updated document
         ).select('-_id -__v');
