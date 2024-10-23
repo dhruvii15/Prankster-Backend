@@ -1,6 +1,5 @@
 var express = require('express');
 var router = express.Router();
-const userControllers = require('../Controllers/users')
 const audioControllers = require('../Controllers/audio')
 const multer = require('multer')
 
@@ -13,7 +12,7 @@ const storageAudio = multer.diskStorage({
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         const sanitizedOriginalName = file.originalname.replace(/\s+/g, ''); // Remove all spaces
-        cb(null, file.fieldname + '-' + uniqueSuffix + sanitizedOriginalName);
+        cb(null, file.fieldname + '-' + uniqueSuffix ); //+ sanitizedOriginalName
     }
 });
 
