@@ -79,7 +79,7 @@ exports.Emoji = async function (req, res, next) {
         }
         const favoriteList = user.FavouriteCover;
 
-        const emojiData = await COVER.find({ Category: "emoji" })
+        const emojiData = await COVER.find({ Category: "emoji" , Hide: false })
             .select('-_id -Category -__v')
             .limit(limit * 1)
             .skip((page - 1) * limit)
@@ -131,7 +131,7 @@ exports.Realistic = async function (req, res, next) {
         }
         const favoriteList = user.FavouriteCover;
 
-        const realisticData = await COVER.find({ Category: "realistic" })
+        const realisticData = await COVER.find({ Category: "realistic" , Hide: false })
             .select('-_id -Category -__v')
             .limit(limit * 1)
             .skip((page - 1) * limit)

@@ -15,6 +15,11 @@ const coverData = new Schema({
         type: Boolean,
         required: true
     },
+    Hide: 
+    {
+        type: Boolean,
+        required: true
+    },
     ItemId : Number
 });
 
