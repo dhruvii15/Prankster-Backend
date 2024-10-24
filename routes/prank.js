@@ -31,5 +31,7 @@ router.post('', userControllers.secure , prankControllers.Read);
 
 router.post('/open-link', upload.none() , prankControllers.Open);
 
+router.post('/update', upload.none() , userControllers.secure ,prankControllers.Update);
+
 
 module.exports = router;

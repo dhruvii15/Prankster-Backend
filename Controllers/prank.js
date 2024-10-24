@@ -57,17 +57,7 @@ exports.Create = async function (req, res, next) {
         } else {
             throw new Error('File is required.');
         }
-
-        // Handle Image
-        if (req.files && req.files.Image) {
-            const ImageFilename = req.files.Image.map((el) => el.filename);
-            req.body.Image = `https://pslink.world/api/public/images/prank/${ImageFilename}`;
-        } else if (typeof req.body.Image === 'string') {
-            req.body.Image = req.body.Image; // Use the string directly
-        } else {
-            throw new Error('Image is required.');
-        }
-
+        
         // Generate and add unique URL
         const baseWord = "prank"; // You can change this or make it dynamic
         req.body.Link = await createUniqueUrl(baseWord);
@@ -99,7 +89,7 @@ exports.Create = async function (req, res, next) {
 
 exports.Read = async function (req, res, next) {
     try {
-        const prankData = await PRANK.find({ UserId: req.User }).select('-_id -__v -UserId');
+        const prankData = await PRANK.find({ UserId: req.User }).select('-__v -UserId');
 
         res.status(201).json({
             status: 1,
@@ -153,4 +143,34 @@ exports.Open = async function (req, res, next) {
     }
 };
 
+
+exports.Update = async function (req, res, next) {
+    try {
+        const hasWhitespaceInKey = obj => {
+            return Object.keys(obj).some(key => /\s/.test(key));
+        };
+        if (hasWhitespaceInKey(req.body)) {
+            throw new Error('Field names must not contain whitespace.');
+        }
+
+        if (!req.body.Id || !req.body.Name) {
+            throw new Error('Id & Name are required.');
+        }
+
+        const update = await PRANK.findByIdAndUpdate(req.body.Id, req.body, { new: true });
+
+        if (!update) {
+            throw new Error('Id is wrong');
+        }
+        res.status(200).json({
+            status: 1,
+            message: 'Data Updated Successfully'
+        });
+    } catch (error) {
+        res.status(400).json({
+            status: 0,
+            message: error.message,
+        });
+    }
+};
 
