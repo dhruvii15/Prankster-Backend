@@ -5,8 +5,6 @@ const USER = require('../models/users');
 
 exports.CreateAudio = async function (req, res, next) {
     try {
-        console.log(req.body);
-        
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
         };
@@ -14,15 +12,14 @@ exports.CreateAudio = async function (req, res, next) {
             throw new Error('Field names must not contain whitespace.');
         }
 
-        if (!req.files.Audio || !req.body.AudioName || !req.files.AudioImage || !req.body.AudioPremium) {
-            throw new Error('Audio, AudioName, AudioImage, and AudioPremium are required.');
+        if (!req.files.Audio || !req.body.AudioName || !req.body.AudioPremium) {
+            throw new Error('Audio, AudioName, and AudioPremium are required.');
         }
 
         const audioFilename = req.files.Audio.map((el) => el.filename);
-        const audioImageFilename = req.files.AudioImage.map((el) => el.filename);
 
         req.body.Audio = `https://pslink.world/api/public/images/audio/${audioFilename}`;
-        req.body.AudioImage = `https://pslink.world/api/public/images/audio/${audioImageFilename}`;
+        req.body.AudioImage = `https://pslink.world/api/public/images/AudioImage.jfif`;
 
         // Get the highest existing ItemId
         const highestItem = await AUDIO.findOne().sort('-ItemId').exec();
@@ -171,11 +168,6 @@ exports.UpdateAudio = async function (req, res, next) {
             if (req.files.Audio) {
                 const audioFilename = req.files.Audio.map((el) => el.filename);
                 req.body.Audio = `https://pslink.world/api/public/images/audio/${audioFilename}`;
-            }
-            if (req.files.AudioImage) {
-                const audioImageFilename = req.files.AudioImage.map((el) => el.filename);
-                req.body.AudioImage = `https://pslink.world/api/public/images/audio/${audioImageFilename}`;
-
             }
         }
 
