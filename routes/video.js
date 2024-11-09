@@ -7,12 +7,13 @@ const multer = require('multer')
 // Define storage for the audio file
 const storageVideo = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, './public/images/video'); // Destination for audio files
+        cb(null, './public/images/video'); // Destination for video and image files
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         const sanitizedOriginalName = file.originalname.replace(/\s+/g, ''); // Remove all spaces
-        cb(null, file.fieldname + '-' + uniqueSuffix + '.mp4');
+        const extension = file.fieldname === 'Video' ? '.mp4' : ''; // Set extension to .mp4 if field name is 'Video'
+        cb(null, file.fieldname + '-' + uniqueSuffix + extension);
     }
 });
 
