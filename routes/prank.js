@@ -1,6 +1,5 @@
 var express = require('express');
 var router = express.Router();
-const userControllers = require('../Controllers/users');
 const prankControllers = require('../Controllers/prank');
 const multer = require('multer');
 
@@ -20,18 +19,16 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 /* POST create service. */
-router.post('/create', userControllers.secure, upload.fields([
+router.post('/create', upload.fields([
     { name: 'CoverImage', maxCount: 1 },
     { name: 'File', maxCount: 1 },
     { name: 'Image', maxCount: 1 }
 ]), prankControllers.Create);
 
 
-router.post('', userControllers.secure , prankControllers.Read);
-
 router.post('/open-link', upload.none() , prankControllers.Open);
 
-router.post('/update', upload.none() , userControllers.secure ,prankControllers.Update);
+router.post('/update', upload.none() , prankControllers.Update);
 
 
 module.exports = router;

@@ -19,9 +19,9 @@
 //       throw new Error('Field names must not contain whitespace.');
 //     }
 
-//     // Check if CategoryId is provided
-//     if (!req.body.CategoryId) {
-//       throw new Error('CategoryId value is required');
+//     // Check if TypeId is provided
+//     if (!req.body.TypeId) {
+//       throw new Error('TypeId value is required');
 //     }
 
 //     // Find user and check spin count
@@ -34,7 +34,7 @@
 //     }
 
 //     let data;
-//     switch (req.body.CategoryId) {
+//     switch (req.body.TypeId) {
 //       case '1':
 //         data = await AUDIO.find({ AudioPremium: true }).select('AudioName AudioImage ItemId -_id');
 //         if (!data || data.length === 0) {

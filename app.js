@@ -10,7 +10,7 @@ require('dotenv').config();
 var adminRouter = require('./routes/admin');
 var usersRouter = require('./routes/users');
 var adsRouter = require('./routes/ads');
-var characterRouter = require('./routes/character')
+var categoryRouter = require('./routes/category')
 var audioRouter = require('./routes/audio');
 var videoRouter = require('./routes/video');
 var galleryRouter = require('./routes/gallery');
@@ -52,7 +52,7 @@ app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 app.use('/api/', usersRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/ads', adsRouter);
-app.use('/api/character', characterRouter);
+app.use('/api/category', categoryRouter);
 app.use('/api/audio', audioRouter);
 app.use('/api/video', videoRouter);
 app.use('/api/gallery', galleryRouter);

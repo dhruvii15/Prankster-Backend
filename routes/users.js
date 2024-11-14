@@ -20,21 +20,30 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage })
 
+const UserStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './public/images/user');
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const sanitizedOriginalName = file.originalname.replace(/\s+/g, '');  // Remove all spaces
+    cb(null, file.fieldname + '-' + uniqueSuffix + sanitizedOriginalName);
+  }
+});
+
+const UserUpload = multer({ storage: UserStorage })
+
+
 /* GET user listing. */
-router.post('/register' , upload.none(), userControllers.Register);
-
 router.post('/users' , upload.none(), userControllers.Read);
-
-// Premium Update
-router.post('/premium', userControllers.secure, upload.none(), userControllers.Update);
 
 
 // Cover page 
 router.post('/cover/create', upload.array('CoverURL', 5), coverControllers.Create);
 
-router.post('/cover/emoji', upload.none() , userControllers.secure , coverControllers.Emoji);
+router.post('/cover/emoji', upload.none() , coverControllers.Emoji);
 
-router.post('/cover/realistic', upload.none() ,userControllers.secure , coverControllers.Realistic);
+router.post('/cover/realistic', upload.none() , coverControllers.Realistic);
 
 router.post('/cover/read', coverControllers.Read);
 
@@ -43,9 +52,14 @@ router.patch('/cover/update/:id', upload.single('CoverURL'), coverControllers.Up
 router.delete('/cover/delete/:id', coverControllers.Delete);
 
 
-// Character
-router.post('/character/all', userControllers.secure, upload.none(), audioControllers.FoundAudio);
+// Category
+router.post('/category/all', upload.none(), audioControllers.FoundAudio);
 
+
+//user upload
+router.post('/users/upload' , UserUpload.single('File'), userControllers.Upload);
+
+router.post('/users/read', userControllers.UserGallery);
 
 module.exports = router;
 

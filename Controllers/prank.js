@@ -35,9 +35,6 @@ exports.Create = async function (req, res, next) {
         if (!req.body.Type) {
             throw new Error('Type are required.');
         }
-
-        req.body.UserId = req.User;
-
         // Handle CoverImage
         if (req.files && req.files.CoverImage) {
             const CoverImageFilename = req.files.CoverImage.map((el) => el.filename);
@@ -65,6 +62,7 @@ exports.Create = async function (req, res, next) {
         let dataCreate = await PRANK.create(req.body);
 
         const responseData = {
+            id: dataCreate._id,
             Link: dataCreate.Link,
             CoverImage: dataCreate.CoverImage,
             File: dataCreate.File,
@@ -87,22 +85,6 @@ exports.Create = async function (req, res, next) {
 };
 
 
-exports.Read = async function (req, res, next) {
-    try {
-        const prankData = await PRANK.find({ UserId: req.User }).select('-__v -UserId');
-
-        res.status(201).json({
-            status: 1,
-            message: 'Prank Data Found Successfully',
-            data: prankData
-        });
-    } catch (error) {
-        res.status(400).json({
-            status: 0,
-            message: error.message,
-        });
-    }
-};
 
 exports.Open = async function (req, res, next) {
     try {

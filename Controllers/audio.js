@@ -54,16 +54,16 @@ exports.FoundAudio = async function (req, res, next) {
         throw new Error('Field names must not contain whitespace.');
       }
   
-      if (!req.body.CharacterId || !req.body.CategoryId) {
-        throw new Error('CharacterId & CategoryId values are required.');
+      if (!req.body.CategoryId || !req.body.TypeId) {
+        throw new Error('CategoryId & TypeId values are required.');
       }
   
       let data;
       let fileField, nameField, imageField, premiumField;
   
-      switch (req.body.CategoryId) {
+      switch (req.body.TypeId) {
         case '1':
-          data = await AUDIO.find({ CharacterId: req.body.CharacterId, Hide: false }).select('-__v -CharacterId -_id -Hide');
+          data = await AUDIO.find({ CategoryId: req.body.CategoryId, Hide: false }).select('-__v -CategoryId -_id -Hide');
           fileField = 'Audio';
           nameField = 'AudioName';
           imageField = 'AudioImage';
@@ -73,7 +73,7 @@ exports.FoundAudio = async function (req, res, next) {
           }
           break;
         case '2':
-          data = await VIDEO.find({ CharacterId: req.body.CharacterId, Hide: false }).select('-__v -CharacterId -_id -Hide');
+          data = await VIDEO.find({ CategoryId: req.body.CategoryId, Hide: false }).select('-__v -CategoryId -_id -Hide');
           fileField = 'Video';
           nameField = 'VideoName';
           imageField = 'VideoImage';
@@ -83,7 +83,7 @@ exports.FoundAudio = async function (req, res, next) {
           }
           break;
         case '3':
-          data = await GALLERY.find({ CharacterId: req.body.CharacterId, Hide: false }).select('-__v -CharacterId -_id -Hide');
+          data = await GALLERY.find({ CategoryId: req.body.CategoryId, Hide: false }).select('-__v -CategoryId -_id -Hide');
           fileField = 'Gallery';
           nameField = 'GalleryName';
           imageField = 'GalleryImage';
@@ -118,8 +118,6 @@ exports.FoundAudio = async function (req, res, next) {
       });
     }
   };
-
-
 
 exports.ReadAudio = async function (req, res, next) {
     try {
@@ -199,8 +197,8 @@ exports.DeleteAudio = async function (req, res, next) {
 //             throw new Error('Field names must not contain whitespace.');
 //         }
 
-//         if (!req.body.CharacterId || !req.body.CategoryId) {
-//             throw new Error('CharacterId & CategoryId values are required.');
+//         if (!req.body.CategoryId || !req.body.TypeId) {
+//             throw new Error('CategoryId & TypeId values are required.');
 //         }
 
 //         const userId = req.User; // Assuming this is set in your authentication middleware
@@ -219,10 +217,10 @@ exports.DeleteAudio = async function (req, res, next) {
 //         let collectField;
 //         let premiumField; // To handle category-specific premium field
 
-//         // Fetch data based on CategoryId
-//         switch (req.body.CategoryId) {
+//         // Fetch data based on TypeId
+//         switch (req.body.TypeId) {
 //             case '1': // Audio
-//                 data = await AUDIO.find({ CharacterId: req.body.CharacterId }).select('-__v -CharacterId -_id');
+//                 data = await AUDIO.find({ CategoryId: req.body.CategoryId }).select('-__v -CategoryId -_id');
 //                 favoriteList = user.FavouriteAudio;
 //                 collectField = 'SpinAudio';
 //                 premiumField = 'AudioPremium'; 
@@ -231,7 +229,7 @@ exports.DeleteAudio = async function (req, res, next) {
 //                 }
 //                 break;
 //             case '2': // Video
-//                 data = await VIDEO.find({ CharacterId: req.body.CharacterId }).select('-__v -CharacterId -_id');
+//                 data = await VIDEO.find({ CategoryId: req.body.CategoryId }).select('-__v -CategoryId -_id');
 //                 favoriteList = user.FavouriteVideo;
 //                 collectField = 'SpinVideo';
 //                 premiumField = 'VideoPremium'; 
@@ -240,7 +238,7 @@ exports.DeleteAudio = async function (req, res, next) {
 //                 }
 //                 break;
 //             case '3': // Gallery
-//                 data = await GALLERY.find({ CharacterId: req.body.CharacterId }).select('-__v -CharacterId -_id');
+//                 data = await GALLERY.find({ CategoryId: req.body.CategoryId }).select('-__v -CategoryId -_id');
 //                 favoriteList = user.FavouriteGallery;
 //                 collectField = 'SpinGallery';
 //                 premiumField = 'GalleryPremium';

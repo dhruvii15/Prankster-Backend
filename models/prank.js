@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const prankSchemaData = new Schema({
-    UserId: String,
     Link: String,
     CoverImage: String,
     File: String,

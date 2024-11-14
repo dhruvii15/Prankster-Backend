@@ -1,6 +1,5 @@
 // var express = require('express');
 // var router = express.Router();
-// const userControllers = require('../Controllers/users')
 // const spinControllers = require('../Controllers/spin')
 // const multer = require('multer');
 
@@ -20,8 +19,8 @@
 // const upload = multer({ storage: storage });
 
 // /* GET service listing. */
-// router.post('', userControllers.secure, upload.none(), spinControllers.Spin);
+// router.post('', upload.none(), spinControllers.Spin);
 
-// router.post('/count', userControllers.secure, upload.none(), spinControllers.Count);
+// router.post('/count', upload.none(), spinControllers.Count);
 
 // module.exports = router;
