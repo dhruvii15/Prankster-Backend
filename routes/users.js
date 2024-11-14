@@ -46,11 +46,6 @@ router.delete('/cover/delete/:id', coverControllers.Delete);
 // Character
 router.post('/character/all', userControllers.secure, upload.none(), audioControllers.FoundAudio);
 
-// Favourite
-router.post('/favourite', userControllers.secure, upload.none(), userControllers.Favourite);
-
-router.post('/favourite/all', userControllers.secure, upload.none(), userControllers.FavouriteRead);
-
 
 module.exports = router;
 

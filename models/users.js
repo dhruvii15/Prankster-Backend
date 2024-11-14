@@ -6,11 +6,7 @@ const userData = new Schema({
     {
         type: Boolean,
         required: true
-    },
-    FavouriteAudio: [Number],
-    FavouriteVideo: [String],
-    FavouriteGallery: [String],
-    FavouriteCover: [String],
+    }
     // Spin : {
     //     type: Number,
     //     default: 4

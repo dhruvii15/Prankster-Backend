@@ -58,25 +58,12 @@ exports.FoundAudio = async function (req, res, next) {
         throw new Error('CharacterId & CategoryId values are required.');
       }
   
-      const userId = req.User; // Assuming this is set in your authentication middleware
-      if (!userId) {
-        throw new Error('User not authenticated');
-      }
-  
-      // Fetch user's favorite lists
-      const user = await USER.findById(userId).select('FavouriteAudio FavouriteVideo FavouriteGallery');
-      if (!user) {
-        throw new Error('User not found');
-      }
-  
       let data;
-      let favoriteList;
       let fileField, nameField, imageField, premiumField;
   
       switch (req.body.CategoryId) {
         case '1':
           data = await AUDIO.find({ CharacterId: req.body.CharacterId, Hide: false }).select('-__v -CharacterId -_id -Hide');
-          favoriteList = user.FavouriteAudio;
           fileField = 'Audio';
           nameField = 'AudioName';
           imageField = 'AudioImage';
@@ -87,7 +74,6 @@ exports.FoundAudio = async function (req, res, next) {
           break;
         case '2':
           data = await VIDEO.find({ CharacterId: req.body.CharacterId, Hide: false }).select('-__v -CharacterId -_id -Hide');
-          favoriteList = user.FavouriteVideo;
           fileField = 'Video';
           nameField = 'VideoName';
           imageField = 'VideoImage';
@@ -98,7 +84,6 @@ exports.FoundAudio = async function (req, res, next) {
           break;
         case '3':
           data = await GALLERY.find({ CharacterId: req.body.CharacterId, Hide: false }).select('-__v -CharacterId -_id -Hide');
-          favoriteList = user.FavouriteGallery;
           fileField = 'Gallery';
           nameField = 'GalleryName';
           imageField = 'GalleryImage';
@@ -118,7 +103,6 @@ exports.FoundAudio = async function (req, res, next) {
         Image: item[imageField],
         Premium: item[premiumField],
         ItemId: item.ItemId,
-        isFavorite: favoriteList.includes(item.ItemId)
       }));
   
       res.status(200).json({
@@ -203,7 +187,6 @@ exports.DeleteAudio = async function (req, res, next) {
 
 
 
-// exports.FoundAudio = async function (req, res, next) {
 //     try {
 //      if (req.headers['x-forwarded-proto'] !== 'https') {
 //            throw new Error('Please use HTTPS protocol')

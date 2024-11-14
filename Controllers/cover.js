@@ -73,23 +73,11 @@ exports.Emoji = async function (req, res, next) {
         //     page = 1;
         // }
 
-        const user = await USER.findById(req.User).select('FavouriteCover');
-        if (!user) {
-            throw new Error('User not found');
-        }
-        const favoriteList = user.FavouriteCover;
-
         const emojiData = await COVER.find({ Category: "emoji" , Hide: false })
             .select('-_id -Category -__v')
             .limit(limit * 1)
             .skip((page - 1) * limit)
             .exec();
-
-        // Add favorite status to each item
-        const dataWithFavoriteStatus = emojiData.map(item => ({
-            ...item.toObject(),
-            isFavorite: favoriteList.includes(item.ItemId)
-        }));
         // const count = await COVER.countDocuments();
 
         res.status(200).json({
@@ -99,7 +87,7 @@ exports.Emoji = async function (req, res, next) {
             // totalCount: count,             // Total number of items
             // page: parseInt(page),          // Current page
             // totalPages: Math.ceil(count / limit), // Total number of pages
-            data: dataWithFavoriteStatus
+            data: emojiData
         });
     } catch (error) {
         res.status(400).json({
@@ -125,30 +113,18 @@ exports.Realistic = async function (req, res, next) {
         const { page } = req.body;
         const limit = 10;
 
-        const user = await USER.findById(req.User).select('FavouriteCover');
-        if (!user) {
-            throw new Error('User not found');
-        }
-        const favoriteList = user.FavouriteCover;
-
         const realisticData = await COVER.find({ Category: "realistic" , Hide: false })
             .select('-_id -Category -__v')
             .limit(limit * 1)
             .skip((page - 1) * limit)
             .exec();
 
-        // Add favorite status to each item
-        const dataWithFavoriteStatus = realisticData.map(item => ({
-            ...item.toObject(),
-            isFavorite: favoriteList.includes(item.ItemId)
-        }));
-
         // const count = await COVER.countDocuments();
 
         res.status(200).json({
             status: 1,
             message: 'Data Found Successfully',
-            data: dataWithFavoriteStatus,
+            data: realisticData,
         });
     } catch (error) {
         res.status(400).json({
