@@ -188,7 +188,7 @@ exports.Create = async function (req, res, next) {
 
     if (req.files && req.files.CoverImage) {
       const CoverImageFilename = req.files.CoverImage.map((el) => el.filename);
-      req.body.CoverImage = `https://pslink.world/api/public/images/prank/${CoverImageFilename}`;
+      req.body.CoverImage = `https://pslink.world/api/public/images/adminPrank/${CoverImageFilename}`;
     } else if (typeof req.body.CoverImage === 'string') {
       req.body.CoverImage = req.body.CoverImage; // Use the string directly
     } else {
@@ -198,7 +198,7 @@ exports.Create = async function (req, res, next) {
     // Handle File
     if (req.files && req.files.File) {
       const FileFilename = req.files.File.map((el) => el.filename);
-      req.body.File = `https://pslink.world/api/public/images/prank/${FileFilename}`;
+      req.body.File = `https://pslink.world/api/public/images/adminPrank/${FileFilename}`;
     } else if (typeof req.body.File === 'string') {
       req.body.File = req.body.File; 
     } else {

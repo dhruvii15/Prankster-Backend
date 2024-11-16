@@ -14,22 +14,21 @@ exports.CreateGallery = async function (req, res, next) {
             throw new Error('GalleryName, GalleryImage, and GalleryPremium are required.');
         }
 
-        if (req.files && req.files.GalleryImage) { 
-        const galleryImageFilename = req.files.GalleryImage.map((el) => el.filename);
-
-        req.body.GalleryImage = `https://pslink.world/api/public/images/gallery/${galleryImageFilename}`;
-        }else if (typeof req.body.GalleryImage === 'string') {
+        if (req.files && req.files.GalleryImage) {
+            const galleryImageFilename = req.files.GalleryImage.map((el) => el.filename);
+            req.body.GalleryImage = `https://pslink.world/api/public/images/gallery/${galleryImageFilename}`;
+        } else if (typeof req.body.GalleryImage === 'string') {
             req.body.GalleryImage = req.body.GalleryImage; // Use the string directly
         } else {
             throw new Error('GalleryImage is required.');
         }
 
-         // Get the highest existing ItemId
-         const highestItem = await GALLERY.findOne().sort('-ItemId').exec();
-         const nextId = highestItem ? highestItem.ItemId + 1 : 1;
- 
-         // Assign the new ID to req.body.ItemId
-         req.body.ItemId = nextId; 
+        // Get the highest existing ItemId
+        const highestItem = await GALLERY.findOne().sort('-ItemId').exec();
+        const nextId = highestItem ? highestItem.ItemId + 1 : 1;
+
+        // Assign the new ID to req.body.ItemId
+        req.body.ItemId = nextId;
 
         const dataCreate = await GALLERY.create(req.body);
 

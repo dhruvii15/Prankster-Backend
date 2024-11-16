@@ -53,14 +53,61 @@ exports.Upload = async function (req, res, next) {
     }
 };
 
-exports.UserGallery = async function (req, res, next) {
+exports.UserRead = async function (req, res, next) {
     try {
-        const GalleryData = await USERGALLERY.find();
-
+        let data
+        switch (req.body.TypeId) {
+            case '1':  // USERAUDIO
+                data = await USERAUDIO.find();
+                break;
+            case '2':  // USERVIDEO
+                data = await USERVIDEO.find();
+                break;
+            case '3':  // USERGALLERY
+                data = await USERGALLERY.find();
+                break;
+            case '4':  // USERCOVER
+                data = await USERCOVER.find();
+                break;
+            default:
+                throw new Error('Invalid TypeId');
+        }
+        
         res.status(200).json({
             status: 1,
             message: 'Data Found Successfully',
-            data: GalleryData,
+            data: data,
+        });
+    } catch (error) {
+        res.status(400).json({
+            status: 0,
+            message: error.message,
+        });
+    }
+};
+
+
+exports.UserDelete = async function (req, res, next) {
+    try {
+        switch (req.query.TypeId) {
+            case '1':  // USERAUDIO
+                await USERAUDIO.findByIdAndDelete(req.params.id);
+                break;
+            case '2':  // USERVIDEO
+                await USERVIDEO.findByIdAndDelete(req.params.id);
+                break;
+            case '3':  // USERGALLERY
+                await USERGALLERY.findByIdAndDelete(req.params.id);
+                break;
+            case '4':  // USERCOVER
+                await USERCOVER.findByIdAndDelete(req.params.id);
+                break;
+            default:
+                throw new Error('Invalid TypeId');
+        }
+        res.status(204).json({
+            status: 1,
+            message: 'Data Deleted Successfully',
         });
     } catch (error) {
         res.status(400).json({
@@ -95,7 +142,7 @@ exports.Spin = async function (req, res, next) {
         } else if (TypeId === '3') {
             query = { Type: 'gallery' };
         } else {
-            return res.status(400).send({ message: 'Invalid TypeId' });
+            throw new Error('Better Luck Next Time')
         }
 
         const Data = await ADMIN.find(query).select('-_id -__v');
@@ -104,13 +151,13 @@ exports.Spin = async function (req, res, next) {
         if (Data.length > 0) {
             var randomData = Data[Math.floor(Math.random() * Data.length)];
         } else {
-           throw new Error('No data found')
+            throw new Error('No data found')
         }
 
         return res.status(200).json({
             status: 1,
             message: 'Data Found Successfully',
-            data: randomData, 
+            data: randomData,
         });
     } catch (error) {
         res.status(400).json({
@@ -119,7 +166,6 @@ exports.Spin = async function (req, res, next) {
         });
     }
 };
-
 
 
 // Snap

@@ -1,5 +1,6 @@
 const AUDIO = require('../models/audio');
 const VIDEO = require('../models/video');
+const USERAUDIO = require('../models/userAudio');
 const GALLERY = require('../models/gallery');
 
 exports.CreateAudio = async function (req, res, next) {
@@ -11,14 +12,20 @@ exports.CreateAudio = async function (req, res, next) {
             throw new Error('Field names must not contain whitespace.');
         }
 
-        if (!req.files.Audio || !req.body.AudioName || !req.body.AudioPremium) {
-            throw new Error('Audio, AudioName, and AudioPremium are required.');
+        if (!req.body.AudioName || !req.body.AudioPremium) {
+            throw new Error('AudioName and AudioPremium are required.');
         }
 
-        const audioFilename = req.files.Audio.map((el) => el.filename);
+        req.body.AudioImage = `https://pslink.world/api/public/images/AudioImage.jfif `;
 
-        req.body.Audio = `https://pslink.world/api/public/images/audio/${audioFilename}`;
-        req.body.AudioImage = `https://pslink.world/api/public/images/AudioImage.jfif`;
+        if (req.files && req.files.Audio) {
+          const audioFilename = req.files.Audio.map((el) => el.filename);
+          req.body.Audio = `https://pslink.world/api/public/images/audio/${audioFilename}`;
+      } else if (typeof req.body.Audio === 'string') {
+          req.body.Audio = req.body.Audio; // Use the string directly
+      } else {
+          throw new Error('Audio is required.');
+      }
 
         // Get the highest existing ItemId
         const highestItem = await AUDIO.findOne().sort('-ItemId').exec();
@@ -28,6 +35,10 @@ exports.CreateAudio = async function (req, res, next) {
         req.body.ItemId = nextId;
 
         const dataCreate = await AUDIO.create(req.body);
+
+        if (req.body.role) {
+          await USERAUDIO.findByIdAndDelete(req.body.role);
+      }
 
         res.status(201).json({
             status: 1,

@@ -55,7 +55,9 @@ router.post('/category/all', upload.none(), audioControllers.FoundAudio);
 //user upload
 router.post('/users/upload' , UserUpload.single('File'), userControllers.Upload);
 
-router.post('/users/read', userControllers.UserGallery);
+router.post('/users/read', userControllers.UserRead);
+
+router.delete('/users/delete/:id', userControllers.UserDelete);
 
 // Spin
 router.post('/spin', upload.none(), userControllers.Spin);

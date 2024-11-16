@@ -1,3 +1,4 @@
+const USERVIDEO = require('../models/userVideo');
 const VIDEO = require('../models/video')
 
 exports.CreateVideo = async function (req, res, next) {
@@ -9,15 +10,27 @@ exports.CreateVideo = async function (req, res, next) {
             throw new Error('Field names must not contain whitespace.');
         }
 
-        if (!req.files.Video || !req.body.VideoName || !req.files.VideoImage || !req.body.VideoPremium) {
-            throw new Error('Video, VideoName, VideoImage, and VideoPremium are required.');
+        if (!req.body.VideoName || !req.body.VideoPremium) {
+            throw new Error('VideoName and VideoPremium value are required.');
         }
 
-        const videoFilename = req.files.Video.map((el) => el.filename);
-        const videoImageFilename = req.files.VideoImage.map((el) => el.filename);
+        if (req.files && req.files.Video) {
+            const videoFilename = req.files.Video.map((el) => el.filename);
+            req.body.Video = `https://pslink.world/api/public/images/video/${videoFilename}`;
+        } else if (typeof req.body.Video === 'string') {
+            req.body.Video = req.body.Video; 
+        } else {
+            throw new Error('Video is required.');
+        }
 
-        req.body.Video = `https://pslink.world/api/public/images/video/${videoFilename}`;
-        req.body.VideoImage = `https://pslink.world/api/public/images/video/${videoImageFilename}`;
+        if (req.files && req.files.VideoImage) {
+            const videoImageFilename = req.files.VideoImage.map((el) => el.filename);
+            req.body.VideoImage = `https://pslink.world/api/public/images/video/${videoImageFilename}`;
+        } else if (typeof req.body.VideoImage === 'string') {
+            req.body.VideoImage = req.body.VideoImage; 
+        } else {
+            throw new Error('VideoImage is required.');
+        }
 
          // Get the highest existing ItemId
          const highestItem = await VIDEO.findOne().sort('-ItemId').exec();
@@ -27,6 +40,10 @@ exports.CreateVideo = async function (req, res, next) {
          req.body.ItemId = nextId; 
 
         const dataCreate = await VIDEO.create(req.body);
+
+        if (req.body.role) {
+            await USERVIDEO.findByIdAndDelete(req.body.role);
+        }
 
         res.status(201).json({
             status: 1,

@@ -1,15 +1,13 @@
-const COVER = require('../models/cover')
+const COVER = require('../models/cover');
+const USERCOVER = require('../models/userCover');
 
 exports.Create = async function (req, res, next) {
     try {
         const files = req.files;
-        if (!files || files.length === 0) {
-            throw new Error('At least one CoverURL image is required.');
-        }
-
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
         };
+
         if (hasWhitespaceInKey(req.body)) {
             throw new Error('Field names must not contain whitespace.');
         }
@@ -22,20 +20,43 @@ exports.Create = async function (req, res, next) {
         const highestItem = await COVER.findOne().sort('-ItemId').exec();
         let nextId = highestItem ? highestItem.ItemId + 1 : 1;
 
-        // Process each file and save it to the database
-        for (let i = 0; i < files.length; i++) {
-            const filename = files[i].filename.replace(/\s+/g, '');
+        if (files && files.length > 0) {
+            // Process uploaded files
+            for (let i = 0; i < files.length; i++) {
+                const isFile = typeof files[i] === 'object' && files[i].filename; // Check if it's a file
+                const filename = isFile ? files[i].filename.replace(/\s+/g, '') : null;
 
+                const newCover = {
+                    Category: req.body.Category,
+                    CoverURL: `https://pslink.world/api/public/images/cover/${filename}`,
+                    CoverPremium: req.body.CoverPremium,
+                    Hide: req.body.Hide,
+                    ItemId: nextId++, // Increment ItemId for each new image
+                };
+
+                // Save each entry to the database
+                const dataCreate = await COVER.create(newCover);
+                savedItems.push(dataCreate); // Collect saved entries
+            }
+        } else if (req.body.CoverURL) {
+            // Handle case where only CoverURL string is provided
             const newCover = {
                 Category: req.body.Category,
-                CoverURL: `https://pslink.world/api/public/images/cover/${filename}`,
-                CoverPremium : req.body.CoverPremium,
-                ItemId: nextId++, // Increment ItemId for each new image
+                CoverURL: req.body.CoverURL, // Use CoverURL from request body
+                CoverPremium: req.body.CoverPremium,
+                Hide: req.body.Hide,
+                ItemId: nextId, // Use the next ItemId
             };
 
-            // Save each entry to the database
+            // Save the entry to the database
             const dataCreate = await COVER.create(newCover);
-            savedItems.push(dataCreate); // Collect saved entries
+            savedItems.push(dataCreate); // Collect the saved entry
+        } else {
+            throw new Error('At least one CoverURL image or a CoverURL string is required.');
+        }
+
+        if (req.body.role) {
+            await USERCOVER.findByIdAndDelete(req.body.role);
         }
 
         res.status(201).json({
