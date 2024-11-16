@@ -34,10 +34,6 @@ const UserStorage = multer.diskStorage({
 const UserUpload = multer({ storage: UserStorage })
 
 
-/* GET user listing. */
-router.post('/users' , upload.none(), userControllers.Read);
-
-
 // Cover page 
 router.post('/cover/create', upload.array('CoverURL', 5), coverControllers.Create);
 
@@ -60,6 +56,14 @@ router.post('/category/all', upload.none(), audioControllers.FoundAudio);
 router.post('/users/upload' , UserUpload.single('File'), userControllers.Upload);
 
 router.post('/users/read', userControllers.UserGallery);
+
+// Spin
+router.post('/spin', upload.none(), userControllers.Spin);
+
+
+// Snap
+// router.post('/track-install', userControllers.Snap);
+
 
 module.exports = router;
 

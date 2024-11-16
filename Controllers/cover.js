@@ -1,5 +1,4 @@
 const COVER = require('../models/cover')
-const USER = require('../models/users')
 
 exports.Create = async function (req, res, next) {
     try {

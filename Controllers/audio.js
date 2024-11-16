@@ -1,7 +1,6 @@
 const AUDIO = require('../models/audio');
 const VIDEO = require('../models/video');
 const GALLERY = require('../models/gallery');
-const USER = require('../models/users');
 
 exports.CreateAudio = async function (req, res, next) {
     try {

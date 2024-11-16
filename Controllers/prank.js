@@ -8,9 +8,10 @@ function generateUniqueName(baseWord, length = 15) {
 }
 
 async function isUrlUnique(url) {
-    const count = await PRANK.countDocuments({ Link: url });
-    return count === 0;
-}
+    const prankCount = await PRANK.countDocuments({ Link: url });
+    const adminCount = await ADMIN.countDocuments({ Link: url });
+    return prankCount === 0 && adminCount === 0;
+  }
 
 async function createUniqueUrl(baseWord) {
     let isUnique = false;
