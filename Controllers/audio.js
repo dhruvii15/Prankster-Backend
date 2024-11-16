@@ -103,12 +103,23 @@ exports.FoundAudio = async function (req, res, next) {
         Premium: item[premiumField],
         ItemId: item.ItemId,
       }));
+
+      function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+    
+    const allShuffledData = shuffle([...dataWithFavoriteStatus]); // Using spread to create a copy
   
       res.status(200).json({
         status: 1,
         message: 'Data Found Successfully',
-        data: dataWithFavoriteStatus,
+        data: allShuffledData,
       });
+
     } catch (error) {
       console.error('Error in FoundAudio:', error);
       res.status(400).json({
