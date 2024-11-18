@@ -13,6 +13,10 @@ exports.CreateGallery = async function (req, res, next) {
         if (!req.body.GalleryName || !req.body.GalleryPremium) {
             throw new Error('GalleryName, GalleryImage, and GalleryPremium are required.');
         }
+        
+        if (!req.body.ArtistName) {
+            req.body.ArtistName = null;
+        }
 
         if (req.files && req.files.GalleryImage) {
             const galleryImageFilename = req.files.GalleryImage.map((el) => el.filename);

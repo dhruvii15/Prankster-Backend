@@ -1,4 +1,5 @@
 const PRANK = require('../models/prank');
+const ADMIN = require('../models/admin');
 const crypto = require('crypto');
 
 
@@ -97,26 +98,25 @@ exports.Open = async function (req, res, next) {
         }
 
         if (!req.body.prankName) {
-            throw new Error('prankName value are required.');
+            throw new Error('prankName value is required.');
         }
-        
-        const PrankLink  = `https://pslink.world/${req.body.prankName}`
 
+        // Construct the PrankLink
+        const PrankLink = `https://pslink.world/${req.body.prankName}`;
         console.log(PrankLink);
 
         const prankData = await PRANK.findOne({ Link: PrankLink }).select('-_id -__v');
+        const adminData = await ADMIN.findOne({ Link: PrankLink }).select('-_id -__v');
 
-        const newView = prankData.View + 1;
-        const updatedData = await PRANK.findOneAndUpdate(
-            { Link: PrankLink },
-            { View: newView },
-            { new: true } // return the updated document
-        ).select('-_id -__v');
+        if (!prankData && !adminData) {
+            throw new Error('No data found for the provided prankName.');
+        }
 
+        // Respond with the appropriate data
         res.status(201).json({
             status: 1,
             message: 'Prank Data Found Successfully',
-            data: updatedData
+            data: prankData || adminData
         });
     } catch (error) {
         res.status(400).json({

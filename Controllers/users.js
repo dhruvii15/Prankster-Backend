@@ -17,18 +17,34 @@ exports.Upload = async function (req, res, next) {
         let data;
         req.body.File = `https://pslink.world/api/public/images/user/${req.file.filename}`;
 
-        // Determine the model and data creation based on TypeId
+        const generateName = async (Model, prefix, field) => {
+            const lastEntry = await Model.findOne().sort({ _id: -1 }).select(field);
+            const match = lastEntry && lastEntry[field]?.match(new RegExp(`${prefix} (\\d+)`));
+            const nextNumber = match ? parseInt(match[1], 10) + 1 : 1;
+            return `${prefix} ${nextNumber}`;
+        };
+
+        // Determine data creation based on TypeId
         switch (req.body.TypeId) {
-            case '1':  // USERAUDIO
-                data = await USERAUDIO.create({ Audio: req.body.File, AudioName: req.body.Name });
+            case '1': // USERAUDIO
+                data = await USERAUDIO.create({
+                    Audio: req.body.File,
+                    AudioName: await generateName(USERAUDIO, 'User Audio', 'AudioName')
+                });
                 break;
-            case '2':  // USERVIDEO
-                data = await USERVIDEO.create({ Video: req.body.File, VideoName: req.body.Name });
+            case '2': // USERVIDEO
+                data = await USERVIDEO.create({
+                    Video: req.body.File,
+                    VideoName: await generateName(USERVIDEO, 'User Video', 'VideoName')
+                });
                 break;
-            case '3':  // USERGALLERY
-                data = await USERGALLERY.create({ GalleryImage: req.body.File, GalleryName: req.body.Name });
+            case '3': // USERGALLERY
+                data = await USERGALLERY.create({
+                    GalleryImage: req.body.File,
+                    GalleryName: await generateName(USERGALLERY, 'User Gallery', 'GalleryName')
+                });
                 break;
-            case '4':  // USERCOVER
+            case '4': // USERCOVER
                 data = await USERCOVER.create({ CoverURL: req.body.File });
                 break;
             default:

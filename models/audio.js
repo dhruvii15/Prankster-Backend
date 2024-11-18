@@ -11,6 +11,7 @@ const audioSchemaData = new Schema({
         type: Boolean,
         required: true
     },
+    ArtistName: String,
     CategoryId: Number,
     ItemId: Number,
     Hide: 

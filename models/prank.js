@@ -7,11 +7,7 @@ const prankSchemaData = new Schema({
     CoverImage: String,
     File: String,
     Type: String,
-    Name: String,
-    View: {
-        type: Number,
-        default: 0
-    }
+    Name: String
 });
 const PRANK = mongoose.model('Prank', prankSchemaData);
 

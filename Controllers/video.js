@@ -14,11 +14,15 @@ exports.CreateVideo = async function (req, res, next) {
             throw new Error('VideoName and VideoPremium value are required.');
         }
 
+        if (!req.body.ArtistName) {
+            req.body.ArtistName = null;
+        }
+
         if (req.files && req.files.Video) {
             const videoFilename = req.files.Video.map((el) => el.filename);
             req.body.Video = `https://pslink.world/api/public/images/video/${videoFilename}`;
         } else if (typeof req.body.Video === 'string') {
-            req.body.Video = req.body.Video; 
+            req.body.Video = req.body.Video;
         } else {
             throw new Error('Video is required.');
         }
@@ -27,17 +31,17 @@ exports.CreateVideo = async function (req, res, next) {
             const videoImageFilename = req.files.VideoImage.map((el) => el.filename);
             req.body.VideoImage = `https://pslink.world/api/public/images/video/${videoImageFilename}`;
         } else if (typeof req.body.VideoImage === 'string') {
-            req.body.VideoImage = req.body.VideoImage; 
+            req.body.VideoImage = req.body.VideoImage;
         } else {
             throw new Error('VideoImage is required.');
         }
 
-         // Get the highest existing ItemId
-         const highestItem = await VIDEO.findOne().sort('-ItemId').exec();
-         const nextId = highestItem ? highestItem.ItemId + 1 : 1;
- 
-         // Assign the new ID to req.body.ItemId
-         req.body.ItemId = nextId; 
+        // Get the highest existing ItemId
+        const highestItem = await VIDEO.findOne().sort('-ItemId').exec();
+        const nextId = highestItem ? highestItem.ItemId + 1 : 1;
+
+        // Assign the new ID to req.body.ItemId
+        req.body.ItemId = nextId;
 
         const dataCreate = await VIDEO.create(req.body);
 

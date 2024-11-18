@@ -16,6 +16,10 @@ exports.CreateAudio = async function (req, res, next) {
             throw new Error('AudioName and AudioPremium are required.');
         }
 
+        if (!req.body.ArtistName) {
+          req.body.ArtistName = null;
+        }
+
         req.body.AudioImage = `https://pslink.world/api/public/images/AudioImage.jfif `;
 
         if (req.files && req.files.Audio) {
