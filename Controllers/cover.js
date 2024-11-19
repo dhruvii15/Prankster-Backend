@@ -89,35 +89,26 @@ exports.Emoji = async function (req, res, next) {
         const { page } = req.body;
         const limit = 10;
 
-        // Get all emoji documents
-        const allEmoji = await COVER.find({ Category: "emoji", Hide: false })
+        // if (!page || isNaN(page) || page < 1) {
+        //     page = 1;
+        // }
+
+        const emojiData = await COVER.find({ Category: "emoji" }).sort({ viewCount: -1 })
             .select('-_id -Category -__v')
+            .limit(limit * 1)
+            .skip((page - 1) * limit)
             .exec();
 
-        // Shuffle the array
-        const shuffleArray = (array) => {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        };
-
-        const shuffledEmoji = shuffleArray([...allEmoji]);
-
-        // Get the requested page
-        const startIndex = (page - 1) * limit;
-        const endIndex = startIndex + limit;
-        const paginatedEmoji = shuffledEmoji.slice(startIndex, endIndex);
+        // const count = await COVER.countDocuments();
 
         res.status(200).json({
             status: 1,
             message: 'Data Found Successfully',
-            // count: paginatedEmoji.length,
-            // totalCount: allEmoji.length,
-            // page: parseInt(page),
-            // totalPages: Math.ceil(allEmoji.length / limit),
-            data: paginatedEmoji
+            // count: emojiData.length,          // Number of items in the current page
+            // totalCount: count,             // Total number of items
+            // page: parseInt(page),          // Current page
+            // totalPages: Math.ceil(count / limit), // Total number of pages
+            data: emojiData
         });
     } catch (error) {
         res.status(400).json({
@@ -143,31 +134,18 @@ exports.Realistic = async function (req, res, next) {
         const { page } = req.body;
         const limit = 10;
 
-        // Get all Realistic documents
-        const allRealistic = await COVER.find({ Category: "realistic", Hide: false })
+        const realisticData = await COVER.find({ Category: "realistic" }).sort({ viewCount: -1 })
             .select('-_id -Category -__v')
+            .limit(limit * 1)
+            .skip((page - 1) * limit)
             .exec();
 
-        // Shuffle the array
-        const shuffleArray = (array) => {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        };
-
-        const shuffledRealistic = shuffleArray([...allRealistic]);
-
-        // Get the requested page
-        const startIndex = (page - 1) * limit;
-        const endIndex = startIndex + limit;
-        const paginatedRealistic = shuffledRealistic.slice(startIndex, endIndex);
+        // const count = await COVER.countDocuments();
 
         res.status(200).json({
             status: 1,
             message: 'Data Found Successfully',
-            data: paginatedRealistic
+            data: realisticData,
         });
     } catch (error) {
         res.status(400).json({

@@ -17,6 +17,11 @@ const gallerySchemaData = new Schema({
     {
         type: Boolean,
         required: true
+    },
+    viewCount: 
+    {
+        type: Number,
+        default: 0
     }
 });
 const GALLERY = mongoose.model('Gallery', gallerySchemaData);

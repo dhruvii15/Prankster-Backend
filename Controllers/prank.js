@@ -1,5 +1,9 @@
 const PRANK = require('../models/prank');
 const ADMIN = require('../models/admin');
+const COVER = require('../models/cover');
+const AUDIO = require('../models/audio');
+const VIDEO = require('../models/video');
+const GALLERY = require('../models/gallery');
 const crypto = require('crypto');
 
 
@@ -12,7 +16,7 @@ async function isUrlUnique(url) {
     const prankCount = await PRANK.countDocuments({ Link: url });
     const adminCount = await ADMIN.countDocuments({ Link: url });
     return prankCount === 0 && adminCount === 0;
-  }
+}
 
 async function createUniqueUrl(baseWord) {
     let isUnique = false;
@@ -56,12 +60,30 @@ exports.Create = async function (req, res, next) {
         } else {
             throw new Error('File is required.');
         }
-        
+
         // Generate and add unique URL
         const baseWord = "prank"; // You can change this or make it dynamic
         req.body.Link = await createUniqueUrl(baseWord);
 
         let dataCreate = await PRANK.create(req.body);
+
+        await COVER.findOneAndUpdate({ CoverURL: req.body.CoverImage }, { $inc: { viewCount: 1 } }, { new: true });
+
+
+        switch (req.body.Type) {
+            case 'audio':
+                await AUDIO.findOneAndUpdate({ Audio: req.body.File }, { $inc: { viewCount: 1 } }, { new: true });
+                break;
+            case 'video':
+                await VIDEO.findOneAndUpdate({ Video: req.body.File }, { $inc: { viewCount: 1 } }, { new: true });
+                break;
+            case 'gallery':
+                await GALLERY.findOneAndUpdate({ GalleryImage: req.body.File }, { $inc: { viewCount: 1 } }, { new: true });
+                break;
+            default:
+                throw new Error('Invalid Type');
+        }
+
 
         const responseData = {
             id: dataCreate._id,

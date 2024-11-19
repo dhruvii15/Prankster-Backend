@@ -18,6 +18,11 @@ const audioSchemaData = new Schema({
     {
         type: Boolean,
         required: true
+    },
+    viewCount: 
+    {
+        type: Number,
+        default: 0
     }
 });
 const AUDIO = mongoose.model('Audio', audioSchemaData);

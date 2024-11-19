@@ -20,6 +20,11 @@ const coverData = new Schema({
         type: Boolean,
         required: true
     },
+    viewCount: 
+    {
+        type: Number,
+        default: 0
+    },
     ItemId : Number
 });
 

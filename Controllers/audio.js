@@ -77,7 +77,7 @@ exports.FoundAudio = async function (req, res, next) {
   
       switch (req.body.TypeId) {
         case '1':
-          data = await AUDIO.find({ CategoryId: req.body.CategoryId, Hide: false }).select('-__v -CategoryId -_id -Hide');
+          data = await AUDIO.find({ CategoryId: req.body.CategoryId, Hide: false }).sort({ viewCount: -1 }).select('-__v -CategoryId -_id -Hide');
           fileField = 'Audio';
           nameField = 'AudioName';
           imageField = 'AudioImage';
@@ -87,7 +87,7 @@ exports.FoundAudio = async function (req, res, next) {
           }
           break;
         case '2':
-          data = await VIDEO.find({ CategoryId: req.body.CategoryId, Hide: false }).select('-__v -CategoryId -_id -Hide');
+          data = await VIDEO.find({ CategoryId: req.body.CategoryId, Hide: false }).sort({ viewCount: -1 }).select('-__v -CategoryId -_id -Hide');
           fileField = 'Video';
           nameField = 'VideoName';
           imageField = 'VideoImage';
@@ -97,7 +97,7 @@ exports.FoundAudio = async function (req, res, next) {
           }
           break;
         case '3':
-          data = await GALLERY.find({ CategoryId: req.body.CategoryId, Hide: false }).select('-__v -CategoryId -_id -Hide');
+          data = await GALLERY.find({ CategoryId: req.body.CategoryId, Hide: false }).sort({ viewCount: -1 }).select('-__v -CategoryId -_id -Hide');
           fileField = 'Gallery';
           nameField = 'GalleryName';
           imageField = 'GalleryImage';
@@ -117,22 +117,23 @@ exports.FoundAudio = async function (req, res, next) {
         Image: item[imageField],
         Premium: item[premiumField],
         ItemId: item.ItemId,
+        viewCount: item.viewCount,
       }));
 
-      function shuffle(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    }
+    //   function shuffle(array) {
+    //     for (let i = array.length - 1; i > 0; i--) {
+    //         const j = Math.floor(Math.random() * (i + 1));
+    //         [array[i], array[j]] = [array[j], array[i]];
+    //     }
+    //     return array;
+    // }
     
-    const allShuffledData = shuffle([...dataWithFavoriteStatus]); // Using spread to create a copy
+    // const allShuffledData = shuffle([...dataWithFavoriteStatus]); // Using spread to create a copy
   
       res.status(200).json({
         status: 1,
         message: 'Data Found Successfully',
-        data: allShuffledData,
+        data: dataWithFavoriteStatus,
       });
 
     } catch (error) {
