@@ -86,7 +86,10 @@ exports.Emoji = async function (req, res, next) {
             throw new Error('page value are required')
         }
 
-        const { page } = req.body;
+        const page = parseInt(req.body.page, 10) || 1;
+        if (page < 1) {
+             throw new Error('Invalid page number');
+        }
         const limit = 10;
 
         // if (!page || isNaN(page) || page < 1) {
@@ -131,7 +134,10 @@ exports.Realistic = async function (req, res, next) {
             throw new Error('page value are required')
         }
 
-        const { page } = req.body;
+        const page = parseInt(req.body.page, 10) || 1;
+        if (page < 1) {
+             throw new Error('Invalid page number');
+        }
         const limit = 10;
 
         const realisticData = await COVER.find({ Category: "realistic" }).sort({ viewCount: -1 })

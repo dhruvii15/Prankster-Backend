@@ -9,7 +9,7 @@ const crypto = require('crypto');
 
 function generateUniqueName(baseWord, length = 15) {
     const randomPart = crypto.randomBytes(length).toString('hex').slice(0, length);
-    return `${baseWord}&&${randomPart}$${randomPart}$$${randomPart}&$${randomPart}&${randomPart}&${randomPart}$${randomPart}$$${randomPart}&$${randomPart}&${randomPart}`;
+    return `${baseWord}${randomPart}$${randomPart}$$${randomPart} `;
 }
 
 async function isUrlUnique(url) {
@@ -62,7 +62,7 @@ exports.Create = async function (req, res, next) {
         }
 
         // Generate and add unique URL
-        const baseWord = "prank"; // You can change this or make it dynamic
+        const baseWord = req.body.Name.replace(/\s+/g, ''); // You can change this or make it dynamic
         req.body.Link = await createUniqueUrl(baseWord);
 
         let dataCreate = await PRANK.create(req.body);

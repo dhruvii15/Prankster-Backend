@@ -68,16 +68,25 @@ exports.FoundAudio = async function (req, res, next) {
         throw new Error('Field names must not contain whitespace.');
       }
   
-      if (!req.body.CategoryId || !req.body.TypeId) {
+      if (!req.body.CategoryId || !req.body.TypeId | !req.body.page) {
         throw new Error('CategoryId & TypeId values are required.');
       }
-  
+
+      const page = parseInt(req.body.page, 10) || 1;
+        if (page < 1) {
+             throw new Error('Invalid page number');
+        }
+
       let data;
       let fileField, nameField, imageField, premiumField;
+      const limit = 10;
   
       switch (req.body.TypeId) {
         case '1':
-          data = await AUDIO.find({ CategoryId: req.body.CategoryId, Hide: false }).sort({ viewCount: -1 }).select('-__v -CategoryId -_id -Hide');
+          data = await AUDIO.find({ CategoryId: req.body.CategoryId, Hide: false }).sort({ viewCount: -1 }).select('-__v -CategoryId -_id -Hide')
+          .limit(limit *1)
+          .skip((page-1) * limit)
+          .exec();
           fileField = 'Audio';
           nameField = 'AudioName';
           imageField = 'AudioImage';
@@ -87,7 +96,10 @@ exports.FoundAudio = async function (req, res, next) {
           }
           break;
         case '2':
-          data = await VIDEO.find({ CategoryId: req.body.CategoryId, Hide: false }).sort({ viewCount: -1 }).select('-__v -CategoryId -_id -Hide');
+          data = await VIDEO.find({ CategoryId: req.body.CategoryId, Hide: false }).sort({ viewCount: -1 }).select('-__v -CategoryId -_id -Hide')
+          .limit(limit *1)
+          .skip((page-1) * limit)
+          .exec();
           fileField = 'Video';
           nameField = 'VideoName';
           imageField = 'VideoImage';
@@ -97,7 +109,10 @@ exports.FoundAudio = async function (req, res, next) {
           }
           break;
         case '3':
-          data = await GALLERY.find({ CategoryId: req.body.CategoryId, Hide: false }).sort({ viewCount: -1 }).select('-__v -CategoryId -_id -Hide');
+          data = await GALLERY.find({ CategoryId: req.body.CategoryId, Hide: false }).sort({ viewCount: -1 }).select('-__v -CategoryId -_id -Hide')
+          .limit(limit *1)
+          .skip((page-1) * limit)
+          .exec();
           fileField = 'Gallery';
           nameField = 'GalleryName';
           imageField = 'GalleryImage';
@@ -119,16 +134,6 @@ exports.FoundAudio = async function (req, res, next) {
         ItemId: item.ItemId,
         viewCount: item.viewCount,
       }));
-
-    //   function shuffle(array) {
-    //     for (let i = array.length - 1; i > 0; i--) {
-    //         const j = Math.floor(Math.random() * (i + 1));
-    //         [array[i], array[j]] = [array[j], array[i]];
-    //     }
-    //     return array;
-    // }
-    
-    // const allShuffledData = shuffle([...dataWithFavoriteStatus]); // Using spread to create a copy
   
       res.status(200).json({
         status: 1,
