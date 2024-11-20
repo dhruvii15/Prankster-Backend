@@ -69,7 +69,7 @@ exports.FoundAudio = async function (req, res, next) {
       }
   
       if (!req.body.CategoryId || !req.body.TypeId | !req.body.page) {
-        throw new Error('CategoryId & TypeId values are required.');
+        throw new Error('CategoryId , TypeId & page values are required.');
       }
 
       const page = parseInt(req.body.page, 10) || 1;
@@ -83,7 +83,7 @@ exports.FoundAudio = async function (req, res, next) {
   
       switch (req.body.TypeId) {
         case '1':
-          data = await AUDIO.find({ CategoryId: req.body.CategoryId, Hide: false }).sort({ viewCount: -1 }).select('-__v -CategoryId -_id -Hide')
+          data = await AUDIO.find({ CategoryId: req.body.CategoryId, Hide: false }).sort({ viewCount: -1,ItemId: 1 }).select('-__v -CategoryId -_id -Hide')
           .limit(limit *1)
           .skip((page-1) * limit)
           .exec();
@@ -96,7 +96,7 @@ exports.FoundAudio = async function (req, res, next) {
           }
           break;
         case '2':
-          data = await VIDEO.find({ CategoryId: req.body.CategoryId, Hide: false }).sort({ viewCount: -1 }).select('-__v -CategoryId -_id -Hide')
+          data = await VIDEO.find({ CategoryId: req.body.CategoryId, Hide: false }).sort({ viewCount: -1,ItemId: 1 }).select('-__v -CategoryId -_id -Hide')
           .limit(limit *1)
           .skip((page-1) * limit)
           .exec();
@@ -109,7 +109,7 @@ exports.FoundAudio = async function (req, res, next) {
           }
           break;
         case '3':
-          data = await GALLERY.find({ CategoryId: req.body.CategoryId, Hide: false }).sort({ viewCount: -1 }).select('-__v -CategoryId -_id -Hide')
+          data = await GALLERY.find({ CategoryId: req.body.CategoryId, Hide: false }).sort({ viewCount: -1,ItemId: 1 }).select('-__v -CategoryId -_id -Hide')
           .limit(limit *1)
           .skip((page-1) * limit)
           .exec();

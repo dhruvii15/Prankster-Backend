@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const userCoverSchemaData = new Schema({
-    CoverURL: String
+    CoverURL: String,
+    CoverName: String
 });
 const USERCOVER = mongoose.model('UserCover', userCoverSchemaData);
 

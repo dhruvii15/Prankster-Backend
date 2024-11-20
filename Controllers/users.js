@@ -45,7 +45,10 @@ exports.Upload = async function (req, res, next) {
                 });
                 break;
             case '4': // USERCOVER
-                data = await USERCOVER.create({ CoverURL: req.body.File });
+                data = await USERCOVER.create({
+                     CoverURL: req.body.File ,
+                     CoverName: await generateName(USERCOVER, 'User Cover', 'CoverName')
+                    });
                 break;
             default:
                 throw new Error('Invalid TypeId');

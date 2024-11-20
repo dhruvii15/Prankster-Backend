@@ -34,7 +34,7 @@ const UserStorage = multer.diskStorage({
 const UserUpload = multer({ storage: UserStorage })
 
 
-// Cover page 
+// Cover page  ===============================
 router.post('/cover/create', upload.array('CoverURL', 5), coverControllers.Create);
 
 router.post('/cover/emoji', upload.none() , coverControllers.Emoji);
@@ -47,19 +47,29 @@ router.patch('/cover/update/:id', upload.single('CoverURL'), coverControllers.Up
 
 router.delete('/cover/delete/:id', coverControllers.Delete);
 
+router.post('/cover/subcategory/create',  upload.none() , coverControllers.CreateSubCategory);
 
-// Category
+router.post('/cover/subcategory/read', coverControllers.ReadSubCategory);
+
+router.patch('/cover/subcategory/update/:id', upload.none() , coverControllers.UpdateSubCategory);
+
+router.delete('/cover/subcategory/delete/:id', coverControllers.DeleteSubCategory);
+
+
+
+// Category ==============================
 router.post('/category/all', upload.none(), audioControllers.FoundAudio);
 
 
-//user upload
+//user upload ================================
 router.post('/users/upload' , UserUpload.single('File'), userControllers.Upload);
 
 router.post('/users/read', userControllers.UserRead);
 
 router.delete('/users/delete/:id', userControllers.UserDelete);
 
-// Spin
+
+// Spin ===========================
 router.post('/spin', upload.none(), userControllers.Spin);
 
 

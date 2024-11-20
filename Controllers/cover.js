@@ -1,4 +1,5 @@
 const COVER = require('../models/cover');
+const SUBCATEGORY = require('../models/subcategory');
 const USERCOVER = require('../models/userCover');
 const fs = require('fs');
 const path = require('path');
@@ -45,6 +46,8 @@ exports.Create = async function (req, res, next) {
         } else if (req.body.CoverURL) {
             // Handle case where only CoverURL string is provided
             const newCover = {
+                CoverName: req.body.CoverName,
+                SubCategory: req.body.SubCategory,
                 Category: req.body.Category,
                 CoverURL: req.body.CoverURL, // Use CoverURL from request body
                 CoverPremium: req.body.CoverPremium,
@@ -100,9 +103,9 @@ exports.Emoji = async function (req, res, next) {
         //     page = 1;
         // }
 
-        const emojiData = await COVER.find({ Category: "emoji" })
-            .sort({ viewCount: -1 })
-            .select('-_id -Category -__v')
+        const emojiData = await COVER.find({ Category: "emoji" , Hide: false })
+            .sort({ viewCount: -1 ,ItemId: 1})
+            .select('-_id -Category -__v -Hide')
             .limit(limit * 1)
             .skip((page - 1) * limit)
             .exec();
@@ -111,9 +114,9 @@ exports.Emoji = async function (req, res, next) {
         const updatedEmojiData = emojiData.map(item => {
             const { viewCount, ...rest } = item.toObject(); 
             return {
-                ...rest,
-                SubCategory: rest.SubCategory || "", 
-                CoverName: rest.CoverName || ""      
+                ...rest, 
+                CoverName: rest.CoverName || "", 
+                SubCategory: rest.SubCategory || ""     
             };
         });
 
@@ -153,8 +156,8 @@ exports.Realistic = async function (req, res, next) {
         }
         const limit = 10;
 
-        const realisticData = await COVER.find({ Category: "realistic" }).sort({ viewCount: -1 })
-            .select('-_id -Category -__v')
+        const realisticData = await COVER.find({ Category: "realistic" , Hide: false }).sort({ viewCount: -1 ,ItemId: 1})
+            .select('-_id -Category -__v -Hide')
             .limit(limit * 1)
             .skip((page - 1) * limit)
             .exec();
@@ -162,9 +165,9 @@ exports.Realistic = async function (req, res, next) {
         const updatedRealisticData = realisticData.map(item => {
             const { viewCount, ...rest } = item.toObject(); 
             return {
-                ...rest,
-                SubCategory: rest.SubCategory || "", 
-                CoverName: rest.CoverName || ""      
+                ...rest, 
+                CoverName: rest.CoverName || "", 
+                SubCategory: rest.SubCategory || ""      
             };
         });
 
@@ -248,6 +251,93 @@ exports.Delete = async function (req, res, next) {
         }
 
         await COVER.findByIdAndDelete(req.params.id);
+        res.status(204).json({
+            status: 1,
+            message: 'Data Deleted Successfully',
+        });
+    } catch (error) {
+        res.status(400).json({
+            status: 0,
+            message: error.message,
+        });
+    }
+};
+
+
+// SubCategory
+exports.CreateSubCategory = async function (req, res, next) {
+    try {
+        const hasWhitespaceInKey = obj => {
+            return Object.keys(obj).some(key => /\s/.test(key));
+        };
+
+        if (hasWhitespaceInKey(req.body)) {
+            throw new Error('Field names must not contain whitespace.');
+        }
+
+        if (!req.body.SubCategory) {
+            throw new Error('SubCategory value is required.');
+        }
+
+        const dataCreate = await SUBCATEGORY.create(req.body);
+
+        res.status(201).json({
+            status: 1,
+            message: 'Data Created Successfully',
+            data: dataCreate, 
+        });
+    } catch (error) {
+        res.status(400).json({
+            status: 0,
+            message: error.message,
+        });
+    }
+};
+
+exports.ReadSubCategory = async function (req, res, next) {
+    try {
+        const Data = await SUBCATEGORY.find();
+
+        res.status(200).json({
+            status: 1,
+            message: 'Data Found Successfully',
+            data: Data,
+        });
+    } catch (error) {
+        res.status(400).json({
+            status: 0,
+            message: error.message,
+        });
+    }
+};
+
+exports.UpdateSubCategory = async function (req, res, next) {
+    try {
+        const hasWhitespaceInKey = obj => {
+            return Object.keys(obj).some(key => /\s/.test(key));
+        };
+        if (hasWhitespaceInKey(req.body)) {
+            throw new Error('Field names must not contain whitespace.');
+        }
+
+        const dataUpdate = await SUBCATEGORY.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.status(200).json({
+            status: 1,
+            message: 'Data Updated Successfully',
+            data: dataUpdate,
+        });
+    } catch (error) {
+        res.status(400).json({
+            status: 0,
+            message: error.message,
+        });
+    }
+};
+
+exports.DeleteSubCategory = async function (req, res, next) {
+    try {
+        let data = await SUBCATEGORY.findByIdAndDelete(req.params.id);
+        await COVER.deleteMany({ SubCategory: data.SubCategory })
         res.status(204).json({
             status: 1,
             message: 'Data Deleted Successfully',
