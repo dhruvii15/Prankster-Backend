@@ -127,12 +127,12 @@ exports.FoundAudio = async function (req, res, next) {
   
       // Add favorite status to each item
       const dataWithFavoriteStatus = data.map(item => ({
-        File: item[fileField],
-        Name: item[nameField],
-        Image: item[imageField],
-        Premium: item[premiumField],
-        ItemId: item.ItemId,
-        viewCount: item.viewCount,
+        File: item[fileField] || " ",
+        Name: item[nameField] || " ",
+        Image: item[imageField] || " ",
+        Premium: item[premiumField] || " ",
+        ItemId: item.ItemId || " ",
+        ArtistName: item.ArtistName || " ",
       }));
   
       res.status(200).json({

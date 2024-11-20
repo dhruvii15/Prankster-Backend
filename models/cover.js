@@ -6,10 +6,12 @@ const coverData = new Schema({
     {
         type: String
     },
+    CoverName: String,
     Category: {
         type: String,
         enum: ['emoji', 'realistic']
     },
+    SubCategory: String,
     CoverPremium:
     {
         type: Boolean,

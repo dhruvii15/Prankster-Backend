@@ -32,6 +32,8 @@ exports.Create = async function (req, res, next) {
                     Category: req.body.Category,
                     CoverURL: `https://pslink.world/api/public/images/cover/${filename}`,
                     CoverPremium: req.body.CoverPremium,
+                    SubCategory: req.body.SubCategory,
+                    CoverName: req.body.CoverName,
                     Hide: req.body.Hide,
                     ItemId: nextId++, // Increment ItemId for each new image
                 };
@@ -90,7 +92,7 @@ exports.Emoji = async function (req, res, next) {
 
         const page = parseInt(req.body.page, 10) || 1;
         if (page < 1) {
-             throw new Error('Invalid page number');
+            throw new Error('Invalid page number');
         }
         const limit = 10;
 
@@ -98,13 +100,22 @@ exports.Emoji = async function (req, res, next) {
         //     page = 1;
         // }
 
-        const emojiData = await COVER.find({ Category: "emoji" }).sort({ viewCount: -1 })
+        const emojiData = await COVER.find({ Category: "emoji" })
+            .sort({ viewCount: -1 })
             .select('-_id -Category -__v')
             .limit(limit * 1)
             .skip((page - 1) * limit)
             .exec();
 
-        // const count = await COVER.countDocuments();
+
+        const updatedEmojiData = emojiData.map(item => {
+            const { viewCount, ...rest } = item.toObject(); 
+            return {
+                ...rest,
+                SubCategory: rest.SubCategory || "", 
+                CoverName: rest.CoverName || ""      
+            };
+        });
 
         res.status(200).json({
             status: 1,
@@ -113,7 +124,7 @@ exports.Emoji = async function (req, res, next) {
             // totalCount: count,             // Total number of items
             // page: parseInt(page),          // Current page
             // totalPages: Math.ceil(count / limit), // Total number of pages
-            data: emojiData
+            data: updatedEmojiData
         });
     } catch (error) {
         res.status(400).json({
@@ -138,7 +149,7 @@ exports.Realistic = async function (req, res, next) {
 
         const page = parseInt(req.body.page, 10) || 1;
         if (page < 1) {
-             throw new Error('Invalid page number');
+            throw new Error('Invalid page number');
         }
         const limit = 10;
 
@@ -148,12 +159,19 @@ exports.Realistic = async function (req, res, next) {
             .skip((page - 1) * limit)
             .exec();
 
-        // const count = await COVER.countDocuments();
+        const updatedRealisticData = realisticData.map(item => {
+            const { viewCount, ...rest } = item.toObject(); 
+            return {
+                ...rest,
+                SubCategory: rest.SubCategory || "", 
+                CoverName: rest.CoverName || ""      
+            };
+        });
 
         res.status(200).json({
             status: 1,
             message: 'Data Found Successfully',
-            data: realisticData,
+            data: updatedRealisticData,
         });
     } catch (error) {
         res.status(400).json({
@@ -221,7 +239,7 @@ exports.Delete = async function (req, res, next) {
         // Extract the filename from the URL
         const coverURL = coverRecord.CoverURL;
         const fileName = path.basename(coverURL);
-        const filePath = path.join(__dirname, '../public/images/cover', fileName); 
+        const filePath = path.join(__dirname, '../public/images/cover', fileName);
 
         if (fs.existsSync(filePath)) {
             fs.unlinkSync(filePath); // Delete the file
