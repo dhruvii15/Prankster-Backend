@@ -130,7 +130,7 @@ exports.FoundAudio = async function (req, res, next) {
         File: item[fileField] || " ",
         Name: item[nameField] || " ",
         Image: item[imageField] || " ",
-        Premium: item[premiumField] || " ",
+        Premium: item[premiumField] || false,
         ItemId: item.ItemId || " ",
         ArtistName: item.ArtistName || " ",
       }));

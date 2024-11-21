@@ -9,7 +9,7 @@ const crypto = require('crypto');
 
 function generateUniqueName(baseWord, length = 15) {
     const randomPart = crypto.randomBytes(length).toString('hex').slice(0, length);
-    return `${baseWord}${randomPart}$${randomPart}$$${randomPart} `;
+    return `${baseWord}${randomPart}$${randomPart}$$${randomPart}`;
 }
 
 async function isUrlUnique(url) {
