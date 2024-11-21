@@ -5,6 +5,8 @@ const GALLERY = require('../models/gallery');
 
 exports.CreateAudio = async function (req, res, next) {
     try {
+      console.log(req.body);
+      
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
         };
@@ -20,8 +22,27 @@ exports.CreateAudio = async function (req, res, next) {
           req.body.ArtistName = null;
         }
 
-        req.body.AudioImage = `https://pslink.world/api/public/images/AudioImage.jfif `;
-
+        const defaultAudioImages = [
+          "https://pslink.world/api/public/images/audio1.png",
+          "https://pslink.world/api/public/images/audio2.png",
+          "https://pslink.world/api/public/images/audio3.png",
+          "https://pslink.world/api/public/images/audio4.png",
+          "https://pslink.world/api/public/images/audio5.png"
+      ];
+      
+      if (req.files && req.files.AudioImage && req.files.AudioImage.length > 0) {
+        // If files are uploaded, map the filenames and use the first file
+        const audioImageFilename = req.files.AudioImage.map((el) => el.filename).join(','); // Combine filenames if multiple
+        req.body.AudioImage = `https://pslink.world/api/public/images/audio/${audioImageFilename}`;
+    } else if (typeof req.body.AudioImage === 'string' && req.body.AudioImage.trim()) {
+        // Use the provided string if it is a valid non-empty string
+        req.body.AudioImage = req.body.AudioImage.trim();
+    } else {
+        // Fallback to a random default image if no AudioImage is provided
+        const randomIndex = Math.floor(Math.random() * defaultAudioImages.length);
+        req.body.AudioImage = defaultAudioImages[randomIndex];
+    }
+      
         if (req.files && req.files.Audio) {
           const audioFilename = req.files.Audio.map((el) => el.filename);
           req.body.Audio = `https://pslink.world/api/public/images/audio/${audioFilename}`;

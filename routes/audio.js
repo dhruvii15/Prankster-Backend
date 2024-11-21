@@ -22,14 +22,16 @@ const uploadAudio = multer({ storage: storageAudio });
 
 // Audio
 router.post('/create', uploadAudio.fields([
-    { name: 'Audio', maxCount: 1 }
+    { name: 'Audio', maxCount: 1 },
+    { name: 'AudioImage', maxCount: 1 }
 ]), audioControllers.CreateAudio);
 
 
 router.post('/read', audioControllers.ReadAudio);
 
 router.patch('/update/:id', uploadAudio.fields([
-    { name: 'Audio', maxCount: 1 }
+    { name: 'Audio', maxCount: 1 },
+    { name: 'AudioImage', maxCount: 1 }
 ]), audioControllers.UpdateAudio);
 
 router.delete('/delete/:id', audioControllers.DeleteAudio);
