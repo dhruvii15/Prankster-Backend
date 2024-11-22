@@ -1,11 +1,12 @@
 const COVER = require('../models/cover');
-const SUBCATEGORY = require('../models/subcategory');
 const USERCOVER = require('../models/userCover');
 const fs = require('fs');
 const path = require('path');
 
 exports.Create = async function (req, res, next) {
     try {
+        console.log(req.body);
+
         const files = req.files;
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
@@ -23,6 +24,19 @@ exports.Create = async function (req, res, next) {
         const highestItem = await COVER.findOne().sort('-ItemId').exec();
         let nextId = highestItem ? highestItem.ItemId + 1 : 1;
 
+        // Parse TagName into an array if it is a JSON string
+        let TagNameArray = [];
+        if (req.body.TagName) {
+            try {
+                TagNameArray = JSON.parse(req.body.TagName); // Parse into an array
+                if (!Array.isArray(TagNameArray)) {
+                    throw new Error('TagName must be a valid array.');
+                }
+            } catch (err) {
+                throw new Error('TagName must be a valid JSON array.');
+            }
+        }
+
         if (files && files.length > 0) {
             // Process uploaded files
             for (let i = 0; i < files.length; i++) {
@@ -33,7 +47,7 @@ exports.Create = async function (req, res, next) {
                     Category: req.body.Category,
                     CoverURL: `https://pslink.world/api/public/images/cover/${filename}`,
                     CoverPremium: req.body.CoverPremium,
-                    SubCategory: req.body.SubCategory,
+                    TagName: TagNameArray, // Save parsed array
                     CoverName: req.body.CoverName,
                     Hide: req.body.Hide,
                     ItemId: nextId++, // Increment ItemId for each new image
@@ -47,7 +61,7 @@ exports.Create = async function (req, res, next) {
             // Handle case where only CoverURL string is provided
             const newCover = {
                 CoverName: req.body.CoverName,
-                SubCategory: req.body.SubCategory,
+                TagName: TagNameArray, // Save parsed array
                 Category: req.body.Category,
                 CoverURL: req.body.CoverURL, // Use CoverURL from request body
                 CoverPremium: req.body.CoverPremium,
@@ -97,14 +111,14 @@ exports.Emoji = async function (req, res, next) {
         if (page < 1) {
             throw new Error('Invalid page number');
         }
-        const limit = 10;
+        const limit = 2;
 
         // if (!page || isNaN(page) || page < 1) {
         //     page = 1;
         // }
 
-        const emojiData = await COVER.find({ Category: "emoji" , Hide: false })
-            .sort({ viewCount: -1 ,ItemId: 1})
+        const emojiData = await COVER.find({ Category: "emoji", Hide: false })
+            .sort({ viewCount: -1, ItemId: 1 })
             .select('-_id -Category -__v -Hide')
             .limit(limit * 1)
             .skip((page - 1) * limit)
@@ -112,11 +126,11 @@ exports.Emoji = async function (req, res, next) {
 
 
         const updatedEmojiData = emojiData.map(item => {
-            const { viewCount, ...rest } = item.toObject(); 
+            const { viewCount, ...rest } = item.toObject();
             return {
-                ...rest, 
-                CoverName: rest.CoverName || "", 
-                SubCategory: rest.SubCategory || ""     
+                ...rest,
+                CoverName: rest.CoverName || "",
+                TagName: rest.TagName || ""
             };
         });
 
@@ -154,20 +168,20 @@ exports.Realistic = async function (req, res, next) {
         if (page < 1) {
             throw new Error('Invalid page number');
         }
-        const limit = 10;
+        const limit = 2;
 
-        const realisticData = await COVER.find({ Category: "realistic" , Hide: false }).sort({ viewCount: -1 ,ItemId: 1})
+        const realisticData = await COVER.find({ Category: "realistic", Hide: false }).sort({ viewCount: -1, ItemId: 1 })
             .select('-_id -Category -__v -Hide')
             .limit(limit * 1)
             .skip((page - 1) * limit)
             .exec();
 
         const updatedRealisticData = realisticData.map(item => {
-            const { viewCount, ...rest } = item.toObject(); 
+            const { viewCount, ...rest } = item.toObject();
             return {
-                ...rest, 
-                CoverName: rest.CoverName || "", 
-                SubCategory: rest.SubCategory || ""      
+                ...rest,
+                CoverName: rest.CoverName || "",
+                TagName: rest.TagName || ""
             };
         });
 
@@ -209,6 +223,20 @@ exports.Update = async function (req, res, next) {
         };
         if (hasWhitespaceInKey(req.body)) {
             throw new Error('Field names must not contain whitespace.');
+        }
+
+        let TagNameArray = [];
+        if (req.body.TagName) {
+            try {
+                TagNameArray = JSON.parse(req.body.TagName); // Parse into an array
+                if (!Array.isArray(TagNameArray)) {
+                    throw new Error('TagName must be a valid array.');
+                }
+            } catch (err) {
+                throw new Error('TagName must be a valid JSON array.');
+            }
+
+            req.body.TagName = TagNameArray;
         }
 
         if (req.file) {
@@ -264,83 +292,25 @@ exports.Delete = async function (req, res, next) {
 };
 
 
-// SubCategory
-exports.CreateSubCategory = async function (req, res, next) {
+
+exports.ReadTagName = async function (req, res, next) {
     try {
-        const hasWhitespaceInKey = obj => {
-            return Object.keys(obj).some(key => /\s/.test(key));
-        };
-
-        if (hasWhitespaceInKey(req.body)) {
-            throw new Error('Field names must not contain whitespace.');
-        }
-
-        if (!req.body.SubCategory) {
-            throw new Error('SubCategory value is required.');
-        }
-
-        const dataCreate = await SUBCATEGORY.create(req.body);
-
-        res.status(201).json({
-            status: 1,
-            message: 'Data Created Successfully',
-            data: dataCreate, 
+        // Find all documents from COVER collection
+        const Data = await COVER.find();
+        // Flatten the subcategories from each document and remove duplicates within the same document
+        let TagName = Data.flatMap(item => {
+            // Remove duplicates within each item's TagName
+            return [...new Set(item.TagName)];
         });
-    } catch (error) {
-        res.status(400).json({
-            status: 0,
-            message: error.message,
-        });
-    }
-};
 
-exports.ReadSubCategory = async function (req, res, next) {
-    try {
-        const Data = await SUBCATEGORY.find();
+        // Remove duplicates across the entire dataset
+        TagName = [...new Set(TagName)];
 
+        // Return the result in the response
         res.status(200).json({
             status: 1,
             message: 'Data Found Successfully',
-            data: Data,
-        });
-    } catch (error) {
-        res.status(400).json({
-            status: 0,
-            message: error.message,
-        });
-    }
-};
-
-exports.UpdateSubCategory = async function (req, res, next) {
-    try {
-        const hasWhitespaceInKey = obj => {
-            return Object.keys(obj).some(key => /\s/.test(key));
-        };
-        if (hasWhitespaceInKey(req.body)) {
-            throw new Error('Field names must not contain whitespace.');
-        }
-
-        const dataUpdate = await SUBCATEGORY.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        res.status(200).json({
-            status: 1,
-            message: 'Data Updated Successfully',
-            data: dataUpdate,
-        });
-    } catch (error) {
-        res.status(400).json({
-            status: 0,
-            message: error.message,
-        });
-    }
-};
-
-exports.DeleteSubCategory = async function (req, res, next) {
-    try {
-        let data = await SUBCATEGORY.findByIdAndDelete(req.params.id);
-        await COVER.deleteMany({ SubCategory: data.SubCategory })
-        res.status(204).json({
-            status: 1,
-            message: 'Data Deleted Successfully',
+            data: TagName,
         });
     } catch (error) {
         res.status(400).json({

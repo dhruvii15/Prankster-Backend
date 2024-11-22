@@ -11,7 +11,7 @@ const coverData = new Schema({
         type: String,
         enum: ['emoji', 'realistic']
     },
-    SubCategory: String,
+    TagName: [String],
     CoverPremium:
     {
         type: Boolean,

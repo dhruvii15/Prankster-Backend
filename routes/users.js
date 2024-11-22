@@ -47,13 +47,9 @@ router.patch('/cover/update/:id', upload.single('CoverURL'), coverControllers.Up
 
 router.delete('/cover/delete/:id', coverControllers.Delete);
 
-router.post('/cover/subcategory/create',  upload.none() , coverControllers.CreateSubCategory);
 
-router.post('/cover/subcategory/read', coverControllers.ReadSubCategory);
+router.post('/cover/TagName/read', coverControllers.ReadTagName);
 
-router.patch('/cover/subcategory/update/:id', upload.none() , coverControllers.UpdateSubCategory);
-
-router.delete('/cover/subcategory/delete/:id', coverControllers.DeleteSubCategory);
 
 
 
