@@ -1,7 +1,5 @@
 const COVER = require('../models/cover');
 const USERCOVER = require('../models/userCover');
-const fs = require('fs');
-const path = require('path');
 
 exports.Create = async function (req, res, next) {
     try {
@@ -261,23 +259,6 @@ exports.Update = async function (req, res, next) {
 
 exports.Delete = async function (req, res, next) {
     try {
-        const coverRecord = await COVER.findById(req.params.id);
-
-        if (!coverRecord) {
-            throw new Error('Data not found')
-        }
-
-        // Extract the filename from the URL
-        const coverURL = coverRecord.CoverURL;
-        const fileName = path.basename(coverURL);
-        const filePath = path.join(__dirname, '../public/images/cover', fileName);
-
-        if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath); // Delete the file
-        } else {
-            console.log('File not found in the folder');
-        }
-
         await COVER.findByIdAndDelete(req.params.id);
         res.status(204).json({
             status: 1,
