@@ -5,7 +5,7 @@ const CATEGORY = require('../models/category')
 
 exports.Create = async function (req, res, next) {
     try {
-        const filename = req.file.filename.replace(/\s+/g, '');  // Remove all spaces
+        const filename = req.file.filename.replace(/\s+/g, ''); // Remove all spaces
 
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
@@ -18,20 +18,45 @@ exports.Create = async function (req, res, next) {
             throw new Error('CategoryImage & CategoryName values are required');
         }
 
+        let TypeArray = [];
+        if (req.body.Type) {
+            try {
+                TypeArray = JSON.parse(req.body.Type); // Parse into an array
+                if (!Array.isArray(TypeArray)) {
+                    throw new Error('Type must be a valid array.');
+                }
+            } catch (err) {
+                throw new Error('Type must be a valid JSON array.');
+            }
+        }
+
         req.body.CategoryImage = `https://pslink.world/api/public/images/category/${filename}`;
 
         // Get the highest existing CategoryId
         const highestCategory = await CATEGORY.findOne().sort('-CategoryId').exec();
-        const nextId = highestCategory ? highestCategory.CategoryId + 1 : 1;
+        let nextId = highestCategory ? highestCategory.CategoryId + 1 : 1;
 
-        // Assign the new ID to req.body.CategoryId
-        req.body.CategoryId = nextId;
+        // Array to store created data
+        const createdDataArray = [];
 
-        const dataCreate = await CATEGORY.create(req.body);
+        // Create multiple entries for each type in TypeArray
+        for (const type of TypeArray) {
+            const newEntry = {
+                ...req.body,
+                Type: type, // Assign the current type value
+                CategoryId: nextId, // Increment CategoryId for each entry
+            };
+
+            const createdData = await CATEGORY.create(newEntry);
+            createdDataArray.push(createdData);
+
+            nextId++; // Increment the ID for the next entry
+        }
+
         res.status(201).json({
             status: 1,
             message: 'Data Created Successfully',
-            data: dataCreate,
+            data: createdDataArray,
         });
     } catch (error) {
         res.status(400).json({
@@ -122,6 +147,8 @@ exports.Update = async function (req, res, next) {
             throw new Error('Field names must not contain whitespace.');
         }
 
+        const TypeArray = JSON.parse(req.body.Type);
+        req.body.Type = TypeArray[TypeArray.length - 1];
         if (req.file) {
             const filename = req.file.filename.replace(/\s+/g, '');  // Remove all spaces
             // req.body.CoverURL = `https://lolcards.link/api/public/images/cover/${filename}`;
@@ -141,6 +168,7 @@ exports.Update = async function (req, res, next) {
         });
     }
 };
+
 
 exports.Delete = async function (req, res, next) {
     try {

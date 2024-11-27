@@ -6,12 +6,12 @@ const multer = require('multer');
 // Define storage for the audio file
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, './public/images/prank'); // Destination for audio files
+        cb(null, './public/images/user'); // Destination for audio files
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         const sanitizedOriginalName = file.originalname.replace(/\s+/g, ''); // Remove all spaces
-        cb(null, file.fieldname + '-' + uniqueSuffix);
+        cb(null, file.fieldname + '-' + uniqueSuffix + sanitizedOriginalName);
     }
 });
 

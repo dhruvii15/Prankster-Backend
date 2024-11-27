@@ -4,6 +4,10 @@ const COVER = require('../models/cover');
 const AUDIO = require('../models/audio');
 const VIDEO = require('../models/video');
 const GALLERY = require('../models/gallery');
+const USERAUDIO = require('../models/userAudio');
+const USERVIDEO = require('../models/userVideo');
+const USERGALLERY = require('../models/userGallery');
+const USERCOVER = require('../models/userCover');
 const crypto = require('crypto');
 
 
@@ -41,10 +45,25 @@ exports.Create = async function (req, res, next) {
         if (!req.body.Type) {
             throw new Error('Type are required.');
         }
+
+        const generateName = async (Model, prefix, field) => {
+            const lastEntry = await Model.findOne().sort({ _id: -1 }).select(field);
+            const match = lastEntry && lastEntry[field]?.match(new RegExp(`${prefix} (\\d+)`));
+            const nextNumber = match ? parseInt(match[1], 10) + 1 : 1;
+            return `${prefix} ${nextNumber}`;
+        };
+
         // Handle CoverImage
         if (req.files && req.files.CoverImage) {
             const CoverImageFilename = req.files.CoverImage.map((el) => el.filename);
-            req.body.CoverImage = `https://pslink.world/api/public/images/prank/${CoverImageFilename}`;
+            req.body.CoverImage = `https://pslink.world/api/public/images/user/${CoverImageFilename}`;
+            req.body.File = `https://pslink.world/api/public/images/user/${CoverImageFilename}`;
+            const cover = await USERCOVER.create({
+                CoverURL: req.body.File,
+                CoverName: await generateName(USERCOVER, 'User Cover', 'CoverName')
+            });
+            console.log(cover);
+
         } else if (typeof req.body.CoverImage === 'string') {
             req.body.CoverImage = req.body.CoverImage; // Use the string directly
         } else {
@@ -54,7 +73,33 @@ exports.Create = async function (req, res, next) {
         // Handle File
         if (req.files && req.files.File) {
             const FileFilename = req.files.File.map((el) => el.filename);
-            req.body.File = `https://pslink.world/api/public/images/prank/${FileFilename}`;
+            req.body.File = `https://pslink.world/api/public/images/user/${FileFilename}`;
+            let data
+            req.body.File = `https://pslink.world/api/public/images/user/${FileFilename}`;
+            switch (req.body.Type) {
+                case 'audio': 
+                    data = await USERAUDIO.create({
+                        Audio: req.body.File,
+                        AudioName: await generateName(USERAUDIO, 'User Audio', 'AudioName')
+                    });
+                    break;
+                case 'video': 
+                    data = await USERVIDEO.create({
+                        Video: req.body.File,
+                        VideoName: await generateName(USERVIDEO, 'User Video', 'VideoName')
+                    });
+                    break;
+                case 'gallery': 
+                    data = await USERGALLERY.create({
+                        GalleryImage: req.body.File,
+                        GalleryName: await generateName(USERGALLERY, 'User Gallery', 'GalleryName')
+                    });
+                    break;
+                default:
+                    throw new Error('Invalid Type');
+            }
+            console.log(data);
+            
         } else if (typeof req.body.File === 'string') {
             req.body.File = req.body.File; // Use the string directly
         } else {
