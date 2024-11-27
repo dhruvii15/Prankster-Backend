@@ -112,7 +112,7 @@ exports.FoundAudio = async function (req, res, next) {
           nameField = 'AudioName';
           imageField = 'AudioImage';
           premiumField = 'AudioPremium';
-          if (!data || data.length === 0) {
+          if (!data) {
             throw new Error('Audio Not Found');
           }
           break;
@@ -125,7 +125,7 @@ exports.FoundAudio = async function (req, res, next) {
           nameField = 'VideoName';
           imageField = 'VideoImage';
           premiumField = 'VideoPremium';
-          if (!data || data.length === 0) {
+          if (!data) {
             throw new Error('Video Not Found');
           }
           break;
@@ -138,7 +138,7 @@ exports.FoundAudio = async function (req, res, next) {
           nameField = 'GalleryName';
           imageField = 'GalleryImage';
           premiumField = 'GalleryPremium';
-          if (!data || data.length === 0) {
+          if (!data) {
             throw new Error('Gallery Image Not Found');
           }
           break;

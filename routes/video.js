@@ -23,16 +23,14 @@ const uploadVideo = multer({ storage: storageVideo });
 
 // Video
 router.post('/create', uploadVideo.fields([
-    { name: 'Video', maxCount: 1 },
-    { name: 'VideoImage', maxCount: 1 }
+    { name: 'Video', maxCount: 1 }
 ]), videoControllers.CreateVideo);
 
 
 router.post('/read', videoControllers.ReadVideo);
 
 router.patch('/update/:id', uploadVideo.fields([
-    { name: 'Video', maxCount: 1 },
-    { name: 'VideoImage', maxCount: 1 }
+    { name: 'Video', maxCount: 1 }
 ]), videoControllers.UpdateVideo);
 
 router.delete('/delete/:id', videoControllers.DeleteVideo);

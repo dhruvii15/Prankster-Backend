@@ -27,15 +27,6 @@ exports.CreateVideo = async function (req, res, next) {
             throw new Error('Video is required.');
         }
 
-        if (req.files && req.files.VideoImage) {
-            const videoImageFilename = req.files.VideoImage.map((el) => el.filename);
-            req.body.VideoImage = `https://pslink.world/api/public/images/video/${videoImageFilename}`;
-        } else if (typeof req.body.VideoImage === 'string') {
-            req.body.VideoImage = req.body.VideoImage;
-        } else {
-            throw new Error('VideoImage is required.');
-        }
-
         // Get the highest existing ItemId
         const highestItem = await VIDEO.findOne().sort('-ItemId').exec();
         const nextId = highestItem ? highestItem.ItemId + 1 : 1;
@@ -61,7 +52,6 @@ exports.CreateVideo = async function (req, res, next) {
         });
     }
 };
-
 
 
 exports.ReadVideo = async function (req, res, next) {
@@ -95,11 +85,6 @@ exports.UpdateVideo = async function (req, res, next) {
             if (req.files.Video) {
                 const VideoFilename = req.files.Video.map((el) => el.filename);
                 req.body.Video = `https://pslink.world/api/public/images/video/${VideoFilename}`;
-            }
-            if (req.files.VideoImage) {
-                const VideoImageFilename = req.files.VideoImage.map((el) => el.filename);
-                req.body.VideoImage = `https://pslink.world/api/public/images/video/${VideoImageFilename}`;
-
             }
         }
 
