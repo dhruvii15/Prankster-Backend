@@ -54,44 +54,48 @@ exports.Create = async function (req, res, next) {
         };
 
         // Handle CoverImage
-        if (req.files && req.files.CoverImage) {
-            const CoverImageFilename = req.files.CoverImage.map((el) => el.filename);
-            req.body.CoverImage = `https://pslink.world/api/public/images/user/${CoverImageFilename}`;
-            req.body.File = `https://pslink.world/api/public/images/user/${CoverImageFilename}`;
-            const cover = await USERCOVER.create({
-                CoverURL: req.body.File,
-                CoverName: await generateName(USERCOVER, 'User Cover', 'CoverName')
-            });
-            console.log(cover);
-
-        } else if (typeof req.body.CoverImage === 'string') {
-            req.body.CoverImage = req.body.CoverImage; // Use the string directly
+        if (req.body.CoverImageURL && req.body.CoverImageURL.trim() !== '') {
+            req.body.CoverImage = req.body.CoverImageURL;
         } else {
-            throw new Error('CoverImage is required.');
+            if (req.files && req.files.CoverImage) {
+                const CoverImageFilename = req.files.CoverImage.map((el) => el.filename);
+                req.body.CoverImage = `https://pslink.world/api/public/images/user/${CoverImageFilename}`;
+                req.body.FileUser = `https://pslink.world/api/public/images/user/${CoverImageFilename}`;
+                const cover = await USERCOVER.create({
+                    CoverURL: req.body.FileUser,
+                    CoverName: await generateName(USERCOVER, 'User Cover', 'CoverName')
+                });
+
+            } else if (typeof req.body.CoverImage === 'string') {
+                req.body.CoverImage = req.body.CoverImage; // Use the string directly
+            }
         }
 
         // Handle File
+        if (req.body.FileURL && req.body.FileURL.trim() !== '') {
+            req.body.File = req.body.FileURL;
+        } else {
         if (req.files && req.files.File) {
             const FileFilename = req.files.File.map((el) => el.filename);
             req.body.File = `https://pslink.world/api/public/images/user/${FileFilename}`;
             let data
-            req.body.File = `https://pslink.world/api/public/images/user/${FileFilename}`;
+            req.body.FileUser = `https://pslink.world/api/public/images/user/${FileFilename}`;
             switch (req.body.Type) {
-                case 'audio': 
+                case 'audio':
                     data = await USERAUDIO.create({
-                        Audio: req.body.File,
+                        Audio: req.body.FileUser,
                         AudioName: await generateName(USERAUDIO, 'User Audio', 'AudioName')
                     });
                     break;
-                case 'video': 
+                case 'video':
                     data = await USERVIDEO.create({
-                        Video: req.body.File,
+                        Video: req.body.FileUser,
                         VideoName: await generateName(USERVIDEO, 'User Video', 'VideoName')
                     });
                     break;
-                case 'gallery': 
+                case 'gallery':
                     data = await USERGALLERY.create({
-                        GalleryImage: req.body.File,
+                        GalleryImage: req.body.FileUser,
                         GalleryName: await generateName(USERGALLERY, 'User Gallery', 'GalleryName')
                     });
                     break;
@@ -99,12 +103,11 @@ exports.Create = async function (req, res, next) {
                     throw new Error('Invalid Type');
             }
             console.log(data);
-            
+
         } else if (typeof req.body.File === 'string') {
             req.body.File = req.body.File; // Use the string directly
-        } else {
-            throw new Error('File is required.');
         }
+    }
 
         // Generate and add unique URL
         const baseWord = req.body.Name.replace(/\s+/g, ''); // You can change this or make it dynamic

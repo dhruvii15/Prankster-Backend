@@ -134,7 +134,7 @@ exports.FoundAudio = async function (req, res, next) {
           .limit(limit *1)
           .skip((page-1) * limit)
           .exec();
-          fileField = 'Gallery';
+          fileField = 'GalleryImage';
           nameField = 'GalleryName';
           imageField = 'GalleryImage';
           premiumField = 'GalleryPremium';
