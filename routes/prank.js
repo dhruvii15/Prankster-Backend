@@ -21,8 +21,7 @@ const upload = multer({ storage: storage });
 /* POST create service. */
 router.post('/create', upload.fields([
     { name: 'CoverImage', maxCount: 1 },
-    { name: 'File', maxCount: 1 },
-    { name: 'Image', maxCount: 1 }
+    { name: 'File', maxCount: 1 }
 ]), prankControllers.Create);
 
 

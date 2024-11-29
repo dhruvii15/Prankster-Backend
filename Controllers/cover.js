@@ -122,7 +122,6 @@ exports.Emoji = async function (req, res, next) {
             .skip((page - 1) * limit)
             .exec();
 
-
         const updatedEmojiData = emojiData.map(item => {
             const { viewCount, ...rest } = item.toObject();
             return {

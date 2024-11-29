@@ -1,5 +1,6 @@
 const AUDIO = require('../models/audio');
 const VIDEO = require('../models/video');
+const CATEGORY = require('../models/category');
 const USERAUDIO = require('../models/userAudio');
 const GALLERY = require('../models/gallery');
 
@@ -18,9 +19,7 @@ exports.CreateAudio = async function (req, res, next) {
             throw new Error('AudioName and AudioPremium are required.');
         }
 
-        if (!req.body.ArtistName) {
-          req.body.ArtistName = null;
-        }
+        req.body.viewCount = 0
 
         const defaultAudioImages = [
           "https://pslink.world/api/public/images/audio1.png",
@@ -134,7 +133,7 @@ exports.FoundAudio = async function (req, res, next) {
           .limit(limit *1)
           .skip((page-1) * limit)
           .exec();
-          fileField = 'GalleryImage';
+          fileField = 'Gallery';
           nameField = 'GalleryName';
           imageField = 'GalleryImage';
           premiumField = 'GalleryPremium';
@@ -172,22 +171,33 @@ exports.FoundAudio = async function (req, res, next) {
   };
 
 exports.ReadAudio = async function (req, res, next) {
-    try {
-        const audioData = await AUDIO.find();
+  try {
+    const categoryData = await CATEGORY.find({ Type: "audio" }).select('CategoryName CategoryId -_id');
+    
+    const AudioData = await AUDIO.find();
 
-        res.status(200).json({
-            status: 1,
-            message: 'Data Found Successfully',
-            data: audioData,
-        });
-    } catch (error) {
-        res.status(400).json({
-            status: 0,
-            message: error.message,
-        });
-    }
+    const categoryMap = {};
+    categoryData.forEach(category => {
+      categoryMap[category.CategoryId] = category.CategoryName;
+    });
+
+    const processedAudioData = AudioData.map(item => ({
+      ...item.toObject(),
+      CategoryName: categoryMap[item.CategoryId] 
+    }));
+    
+    res.status(200).json({
+      status: 1,
+      message: 'Data Found Successfully',
+      data: processedAudioData,
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: 0,
+      message: error.message,
+    });
+  }
 };
-
 
 exports.UpdateAudio = async function (req, res, next) {
     try {

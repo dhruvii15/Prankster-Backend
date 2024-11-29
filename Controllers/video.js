@@ -1,5 +1,6 @@
 const USERVIDEO = require('../models/userVideo');
 const VIDEO = require('../models/video')
+const CATEGORY = require('../models/category')
 
 exports.CreateVideo = async function (req, res, next) {
     try {
@@ -13,10 +14,7 @@ exports.CreateVideo = async function (req, res, next) {
         if (!req.body.VideoName || !req.body.VideoPremium) {
             throw new Error('VideoName and VideoPremium value are required.');
         }
-
-        if (!req.body.ArtistName) {
-            req.body.ArtistName = null;
-        }
+        req.body.viewCount = 0
 
         if (req.files && req.files.Video) {
             const videoFilename = req.files.Video.map((el) => el.filename);
@@ -56,21 +54,32 @@ exports.CreateVideo = async function (req, res, next) {
 
 exports.ReadVideo = async function (req, res, next) {
     try {
-        const VideoData = await VIDEO.find();
-
-        res.status(200).json({
-            status: 1,
-            message: 'Data Found Successfully',
-            data: VideoData,
-        });
+      const categoryData = await CATEGORY.find({ Type: "video" }).select('CategoryName CategoryId -_id');
+      
+      const VideoData = await VIDEO.find();
+  
+      const categoryMap = {};
+      categoryData.forEach(category => {
+        categoryMap[category.CategoryId] = category.CategoryName;
+      });
+  
+      const processedVideoData = VideoData.map(item => ({
+        ...item.toObject(),
+        CategoryName: categoryMap[item.CategoryId] 
+      }));
+      
+      res.status(200).json({
+        status: 1,
+        message: 'Data Found Successfully',
+        data: processedVideoData,
+      });
     } catch (error) {
-        res.status(400).json({
-            status: 0,
-            message: error.message,
-        });
+      res.status(400).json({
+        status: 0,
+        message: error.message,
+      });
     }
-};
-
+  };
 
 exports.UpdateVideo = async function (req, res, next) {
     try {

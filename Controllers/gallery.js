@@ -1,3 +1,4 @@
+const CATEGORY = require('../models/category');
 const GALLERY = require('../models/gallery')
 const USERGALLERY = require('../models/userGallery')
 
@@ -13,10 +14,8 @@ exports.CreateGallery = async function (req, res, next) {
         if (!req.body.GalleryName || !req.body.GalleryPremium) {
             throw new Error('GalleryName, GalleryImage, and GalleryPremium are required.');
         }
-        
-        if (!req.body.ArtistName) {
-            req.body.ArtistName = null;
-        }
+
+        req.body.viewCount = 0
 
         if (req.files && req.files.GalleryImage) {
             const galleryImageFilename = req.files.GalleryImage.map((el) => el.filename);
@@ -54,24 +53,35 @@ exports.CreateGallery = async function (req, res, next) {
 };
 
 
-
 exports.ReadGallery = async function (req, res, next) {
     try {
-        const GalleryData = await GALLERY.find();
+      const categoryData = await CATEGORY.find({ Type: "gallery" }).select('CategoryName CategoryId -_id');
+      
+      const GalleryData = await GALLERY.find();
 
-        res.status(200).json({
-            status: 1,
-            message: 'Data Found Successfully',
-            data: GalleryData,
-        });
+      const categoryMap = {};
+      categoryData.forEach(category => {
+        categoryMap[category.CategoryId] = category.CategoryName;
+      });
+
+      const processedGalleryData = GalleryData.map(item => ({
+        ...item.toObject(),
+        CategoryName: categoryMap[item.CategoryId] 
+      }));
+      
+      res.status(200).json({
+        status: 1,
+        message: 'Data Found Successfully',
+        data: processedGalleryData,
+      });
     } catch (error) {
-        res.status(400).json({
-            status: 0,
-            message: error.message,
-        });
+      res.status(400).json({
+        status: 0,
+        message: error.message,
+      });
     }
-};
-
+  };
+  
 
 exports.UpdateGallery = async function (req, res, next) {
     try {

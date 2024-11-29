@@ -22,7 +22,6 @@ const audioSchemaData = new Schema({
     viewCount: 
     {
         type: Number,
-        default: 0
     }
 });
 const AUDIO = mongoose.model('Audio', audioSchemaData);

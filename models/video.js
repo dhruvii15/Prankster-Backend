@@ -20,8 +20,7 @@ const videoSchemaData = new Schema({
     },
     viewCount: 
     {
-        type: Number,
-        default: 0
+        type: Number
     }
 });
 const VIDEO = mongoose.model('Video', videoSchemaData);
