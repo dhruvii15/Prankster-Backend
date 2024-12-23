@@ -2,7 +2,9 @@ var express = require('express');
 var router = express.Router();
 const userControllers = require('../Controllers/users')
 const coverControllers = require('../Controllers/cover')
+const prankControllers = require('../Controllers/prank')
 const audioControllers = require('../Controllers/audio')
+const adminControllers = require('../Controllers/admin')
 const multer = require('multer')
 
 
@@ -53,6 +55,15 @@ router.delete('/users/delete/:id', userControllers.UserDelete);
 // Spin ===========================
 router.post('/spin', upload.none(), userControllers.Spin);
 
+
+
+// ========================================= Share =============================================
+
+router.get('/public/images/cover/:id/:imageName', prankControllers.Share);
+
+router.get('/public/images/user/:id/:imageName', prankControllers.UserShare);
+
+router.get('/public/images/adminPrank/:id/:imageName', adminControllers.Share);
 
 // Snap
 // router.post('/track-install', userControllers.Snap);

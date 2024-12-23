@@ -20,6 +20,8 @@ const adminData = new Schema({
     File: String,
     Type: String,
     Name: String,
+    ShareURL: String,
+    ItemId: Number,
 });
 
 

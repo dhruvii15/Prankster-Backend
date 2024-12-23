@@ -3,6 +3,7 @@ const PRANK = require('../models/prank')
 var jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+var path = require('path');
 
 
 exports.sequre = async function (req, res, next) {
@@ -150,7 +151,7 @@ exports.Forgetpass = async function (req, res, next) {
 // Admin Spin Prank
 function generateUniqueName(baseWord, length = 15) {
   const randomPart = crypto.randomBytes(length).toString('hex').slice(0, length);
-  return `${baseWord}&&${randomPart}$${randomPart}$$${randomPart}&$${randomPart}&${randomPart}&${randomPart}$${randomPart}$$${randomPart}&$${randomPart}&${randomPart}`;
+  return `${baseWord}${randomPart}$${randomPart}$$${randomPart}`;
 }
 
 // Check if the URL is unique across both PRANK and ADMIN collections
@@ -186,10 +187,22 @@ exports.Create = async function (req, res, next) {
       throw new Error('Type is required.');
     }
 
+    const highestItem = await ADMIN.findOne().sort('-ItemId').exec();
+    const nextId = highestItem ? highestItem.ItemId + 1 : 1;
+
+    // Assign the new ID to req.body.ItemId
+    req.body.ItemId = nextId;
+
     if (req.files && req.files.CoverImage) {
       const CoverImageFilename = req.files.CoverImage.map((el) => el.filename);
       req.body.CoverImage = `https://pslink.world/api/public/images/adminPrank/${CoverImageFilename}`;
+      const newCoverImageURL = `https://pslink.world/api/public/images/adminPrank/${nextId}/${CoverImageFilename}`;
+      req.body.ShareURL = newCoverImageURL;
     } else if (typeof req.body.CoverImage === 'string') {
+      const urlParts = req.body.CoverImageURL.split('/');
+      const fileName = urlParts[urlParts.length - 1];
+      const newCoverImageURL = `https://pslink.world/api/public/images/adminPrank/${nextId}/${fileName}`;
+      req.body.ShareURL = newCoverImageURL;
       req.body.CoverImage = req.body.CoverImage; // Use the string directly
     } else {
       throw new Error('CoverImage is required.');
@@ -200,13 +213,13 @@ exports.Create = async function (req, res, next) {
       const FileFilename = req.files.File.map((el) => el.filename);
       req.body.File = `https://pslink.world/api/public/images/adminPrank/${FileFilename}`;
     } else if (typeof req.body.File === 'string') {
-      req.body.File = req.body.File; 
+      req.body.File = req.body.File;
     } else {
       throw new Error('File is required.');
     }
 
     // Generate and add unique URL
-    const baseWord = "prank"; 
+    const baseWord = req.body.Name.replace(/\s+/g, '');
     req.body.Link = await createUniqueUrl(baseWord);
 
     const dataCreate = await ADMIN.create(req.body);
@@ -287,6 +300,47 @@ exports.SpinDelete = async function (req, res, next) {
       status: 1,
       message: 'Data Deleted Successfully',
     });
+  } catch (error) {
+    res.status(400).json({
+      status: 0,
+      message: error.message,
+    });
+  }
+};
+
+// ======================== share ============================
+const imagePath = '/home/plexustechnology/pslink.world/api/public/images/adminPrank/';
+function isBrowser(userAgent) {
+  const browserPatterns = [
+    'Mozilla',
+    'Chrome',
+    'Safari',
+    'Firefox',
+    'Edge',
+    'Opera'
+  ];
+
+  return browserPatterns.some(pattern =>
+    userAgent && userAgent.includes(pattern)
+  );
+}
+
+
+exports.Share = async function (req, res, next) {
+  try {
+    const userAgent = req.headers['user-agent'];
+    const imageName = req.params.imageName;
+    const id = req.params.id;
+
+    const prankData = await ADMIN.findOne({ ItemId: id }).select('Link');
+
+    // // If request is from a browser, redirect to lolcards.link
+    if (isBrowser(userAgent)) {
+      return res.redirect(prankData.Link);
+    }
+
+    // For non-browser requests (Instagram, Facebook, etc), serve the file
+    res.sendFile(path.join(imagePath, imageName));
   } catch (error) {
     res.status(400).json({
       status: 0,

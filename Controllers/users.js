@@ -98,7 +98,7 @@ exports.Spin = async function (req, res, next) {
             throw new Error('Better Luck Next Time')
         }
 
-        const Data = await ADMIN.find(query).select('-_id -__v');
+        const Data = await ADMIN.find(query).select('-_id -__v -ItemId');
 
         // If there is data, pick a random one
         if (Data.length > 0) {
