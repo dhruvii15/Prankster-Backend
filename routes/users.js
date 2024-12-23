@@ -5,6 +5,7 @@ const coverControllers = require('../Controllers/cover')
 const prankControllers = require('../Controllers/prank')
 const audioControllers = require('../Controllers/audio')
 const adminControllers = require('../Controllers/admin')
+const notificationControllers = require('../Controllers/notification')
 const multer = require('multer')
 
 
@@ -23,7 +24,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage })
 
 
-// Cover page  ===============================
+// ================================= Cover page  ===============================
 router.post('/cover/create', upload.array('CoverURL', 5), coverControllers.Create);
 
 router.post('/cover/emoji', upload.none() , coverControllers.Emoji);
@@ -36,23 +37,22 @@ router.patch('/cover/update/:id', upload.single('CoverURL'), coverControllers.Up
 
 router.delete('/cover/delete/:id', coverControllers.Delete);
 
-
 router.post('/cover/TagName/read', coverControllers.ReadTagName);
 
 
 
-// Category ==============================
+// =============================== Category ==============================
 router.post('/category/all', upload.none(), audioControllers.FoundAudio);
 
 
-//user upload ================================
+//=============================== user upload ================================
 
 router.post('/users/read', userControllers.UserRead);
 
 router.delete('/users/delete/:id', userControllers.UserDelete);
 
 
-// Spin ===========================
+// ==================================== Spin ======================================
 router.post('/spin', upload.none(), userControllers.Spin);
 
 
@@ -65,8 +65,17 @@ router.get('/public/images/user/:id/:imageName', prankControllers.UserShare);
 
 router.get('/public/images/adminPrank/:id/:imageName', adminControllers.Share);
 
-// Snap
-// router.post('/track-install', userControllers.Snap);
+// ========================================= Share =============================================
+
+router.post('/notification/create', notificationControllers.Create);
+
+router.post('/notification/read', notificationControllers.Read);
+
+router.patch('/notification/update/:id', notificationControllers.Update);
+
+router.delete('/notification/delete/:id', notificationControllers.Delete);
+
+
 
 
 module.exports = router;
