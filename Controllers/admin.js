@@ -218,6 +218,15 @@ exports.Create = async function (req, res, next) {
       throw new Error('File is required.');
     }
 
+
+    if (req.files && req.files.Image) {
+      const ImageFilename = req.files.Image.map((el) => el.filename);
+      req.body.Image = `https://pslink.world/api/public/images/adminPrank/${ImageFilename}`;
+
+    } else if (typeof req.body.CoverImage === 'string') {
+      req.body.Image = req.body.Image; // Use the string directly
+    }
+
     // Generate and add unique URL
     const baseWord = req.body.Name.replace(/\s+/g, '');
     req.body.Link = await createUniqueUrl(baseWord);

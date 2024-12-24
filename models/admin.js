@@ -18,6 +18,7 @@ const adminData = new Schema({
     Link: String,
     CoverImage: String,
     File: String,
+    Image: String,
     Type: String,
     Name: String,
     ShareURL: String,

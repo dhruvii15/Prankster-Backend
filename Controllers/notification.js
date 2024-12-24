@@ -97,7 +97,6 @@ const sendPushNotification = async (Title, Description) => {
     }
 };
 
-
 const sendRandomNotification = async () => {
     try {
         const notifications = await NOTIFICATION.find();
@@ -116,14 +115,27 @@ const sendRandomNotification = async () => {
     }
 };
 
+// Function to calculate time difference and trigger at 6 PM
+const scheduleNotificationAt6PM = () => {
+    const now = new Date();
+    const targetTime = new Date();
+    targetTime.setHours(18, 0, 0, 0); // 6 PM today
 
-cron.schedule('0 18 * * *', async () => {
-    try {
-        console.log('Running scheduled job to send random notification at 6 PM...');
-        sendRandomNotification();
-    } catch (error) {
-        console.error('Error during scheduled task:', error);
+    if (now > targetTime) {
+        // If it's already past 6 PM, schedule for 6 PM tomorrow
+        targetTime.setDate(targetTime.getDate() + 1);
     }
-}, {
-    timezone: "Asia/Kolkata"
-});
+
+    const delay = targetTime - now;
+    console.log(`Scheduling notification for 6 PM in ${delay}ms`);
+
+    setTimeout(() => {
+        console.log('Sending scheduled notification...');
+        sendRandomNotification();
+        // Optionally schedule it again for the next day
+        scheduleNotificationAt6PM();
+    }, delay);
+};
+
+// Call the function to start the process
+scheduleNotificationAt6PM();

@@ -37,14 +37,16 @@ router.patch('/Forgetpass', AdminControllers.Forgetpass);
 // Admin Spin Prank
 router.post('/spin/create', upload.fields([
     { name: 'CoverImage', maxCount: 1 },
-    { name: 'File', maxCount: 1 }
+    { name: 'File', maxCount: 1 },
+    { name: 'Image', maxCount: 1 }
 ]), AdminControllers.Create);
 
 router.post('/spin/read', AdminControllers.SpinRead);
 
 router.patch('/spin/update/:id', upload.fields([
     { name: 'CoverImage', maxCount: 1 },
-    { name: 'File', maxCount: 1 }
+    { name: 'File', maxCount: 1 },
+    { name: 'Image', maxCount: 1 }
 ]), AdminControllers.SpinUpdate);
 
 router.delete('/spin/delete/:id', AdminControllers.SpinDelete);

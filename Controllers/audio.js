@@ -213,6 +213,10 @@ exports.UpdateAudio = async function (req, res, next) {
                 const audioFilename = req.files.Audio.map((el) => el.filename);
                 req.body.Audio = `https://pslink.world/api/public/images/audio/${audioFilename}`;
             }
+            if (req.files.AudioImage) {
+              const audioImageFilename = req.files.AudioImage.map((el) => el.filename);
+              req.body.AudioImage = `https://pslink.world/api/public/images/audio/${audioImageFilename}`;
+          }
         }
 
         const dataUpdate = await AUDIO.findByIdAndUpdate(req.params.id, req.body, { new: true });

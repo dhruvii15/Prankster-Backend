@@ -122,6 +122,9 @@ exports.Create = async function (req, res, next) {
             }
         }
 
+        // Handle Image
+        req.body.Image = req.body.ImageURL;
+
         // Generate and add unique URL
         const baseWord = req.body.Name.replace(/\s+/g, ''); // You can change this or make it dynamic
         req.body.Link = await createUniqueUrl(baseWord);
@@ -153,7 +156,6 @@ exports.Create = async function (req, res, next) {
             File: dataCreate.File,
             Type: dataCreate.Type,
             Name: dataCreate.Name,
-            Image: dataCreate.Image
         };
 
         res.status(201).json({

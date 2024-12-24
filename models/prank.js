@@ -7,6 +7,7 @@ const prankSchemaData = new Schema({
     CoverImage: String,
     ShareURL: String,
     File: String,
+    Image: String,
     Type: String,
     Name: String,
     ItemId: Number,
