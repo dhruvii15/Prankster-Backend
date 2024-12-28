@@ -17,7 +17,7 @@ exports.CreateVideo = async function (req, res, next) {
         req.body.viewCount = 0
 
         if (req.files && req.files.Video) {
-            const videoFilename = req.files.Video.map((el) => el.filename);
+            const videoFilename = req.compressedVideoFile;
             req.body.Video = `https://pslink.world/api/public/images/video/${videoFilename}`;
         } else if (typeof req.body.Video === 'string') {
             req.body.Video = req.body.Video;
@@ -92,7 +92,7 @@ exports.UpdateVideo = async function (req, res, next) {
 
         if (req.files) {
             if (req.files.Video) {
-                const VideoFilename = req.files.Video.map((el) => el.filename);
+                const VideoFilename = req.compressedVideoFile;
                 req.body.Video = `https://pslink.world/api/public/images/video/${VideoFilename}`;
             }
         }

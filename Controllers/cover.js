@@ -1,10 +1,8 @@
 const COVER = require('../models/cover');
 const USERCOVER = require('../models/userCover');
 
-exports.Create = async function (req, res, next) {
+exports.Create = async function (req, res, next , ) {
     try {
-        console.log(req.body);
-
         const files = req.files;
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
@@ -38,8 +36,7 @@ exports.Create = async function (req, res, next) {
         if (files && files.length > 0) {
             // Process uploaded files
             for (let i = 0; i < files.length; i++) {
-                const isFile = typeof files[i] === 'object' && files[i].filename; // Check if it's a file
-                const filename = isFile ? files[i].filename.replace(/\s+/g, '') : null;
+                const filename = req.compressedFiles[0].replace(/\s+/g, '');
 
                 const newCover = {
                     Category: req.body.Category,
@@ -109,7 +106,7 @@ exports.Emoji = async function (req, res, next) {
         if (page < 1) {
             throw new Error('Invalid page number');
         }
-        const limit = 2;
+        const limit = 10;
 
         // if (!page || isNaN(page) || page < 1) {
         //     page = 1;
@@ -165,7 +162,7 @@ exports.Realistic = async function (req, res, next) {
         if (page < 1) {
             throw new Error('Invalid page number');
         }
-        const limit = 2;
+        const limit = 10;
 
         const realisticData = await COVER.find({ Category: "realistic", Hide: false }).sort({ viewCount: -1, ItemId: 1 })
             .select('-_id -Category -__v -Hide')
@@ -237,7 +234,7 @@ exports.Update = async function (req, res, next) {
         }
 
         if (req.file) {
-            const filename = req.file.filename.replace(/\s+/g, '');  // Remove all spaces
+            const filename = req.compressedFiles[0];  // Remove all spaces
             // req.body.CoverURL = `https://lolcards.link/api/public/images/cover/${filename}`;
             req.body.CoverURL = `https://pslink.world/api/public/images/cover/${filename}`;
         }

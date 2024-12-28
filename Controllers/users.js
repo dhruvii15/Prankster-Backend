@@ -77,6 +77,7 @@ exports.Spin = async function (req, res, next) {
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
         };
+
         if (hasWhitespaceInKey(req.body)) {
             throw new Error('Field names must not contain whitespace.');
         }
@@ -95,23 +96,33 @@ exports.Spin = async function (req, res, next) {
         } else if (TypeId === '3') {
             query = { Type: 'gallery' };
         } else {
-            throw new Error('Better Luck Next Time')
+            throw new Error('Better Luck Next Time');
         }
 
-        const Data = await ADMIN.find(query).select('-_id -__v -ItemId -Image');
+        const Data = await ADMIN.find(query).select('-_id -__v -ItemId');
 
-        // If there is data, pick a random one
         if (Data.length > 0) {
-            var randomData = Data[Math.floor(Math.random() * Data.length)];
-        } else {
-            throw new Error('No data found')
-        }
+            const randomData = Data[Math.floor(Math.random() * Data.length)];
 
-        return res.status(200).json({
-            status: 1,
-            message: 'Data Found Successfully',
-            data: randomData,
-        });
+            // Ensure all fields exist, defaulting to an empty string if missing
+            const sanitizedData = {
+                Link: randomData.Link || "",
+                CoverImage: randomData.CoverImage || "",
+                File: randomData.File || "",
+                Type: randomData.Type || "",
+                Name: randomData.Name || "",
+                ShareURL: randomData.ShareURL || "",
+                Image: randomData.Image || "",
+            };
+
+            return res.status(200).json({
+                status: 1,
+                message: 'Data Found Successfully',
+                data: sanitizedData,
+            });
+        } else {
+            throw new Error('No data found');
+        }
     } catch (error) {
         res.status(400).json({
             status: 0,

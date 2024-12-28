@@ -6,7 +6,7 @@ const GALLERY = require('../models/gallery');
 
 exports.CreateAudio = async function (req, res, next) {
     try {
-      console.log(req.body);
+      console.log(req.compressedAudioFile);
       
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
@@ -31,7 +31,7 @@ exports.CreateAudio = async function (req, res, next) {
       
       if (req.files && req.files.AudioImage && req.files.AudioImage.length > 0) {
         // If files are uploaded, map the filenames and use the first file
-        const audioImageFilename = req.files.AudioImage.map((el) => el.filename).join(','); // Combine filenames if multiple
+        const audioImageFilename = req.audioImageFile; // Combine filenames if multiple
         req.body.AudioImage = `https://pslink.world/api/public/images/audio/${audioImageFilename}`;
     } else if (typeof req.body.AudioImage === 'string' && req.body.AudioImage.trim()) {
         // Use the provided string if it is a valid non-empty string
@@ -43,7 +43,7 @@ exports.CreateAudio = async function (req, res, next) {
     }
       
         if (req.files && req.files.Audio) {
-          const audioFilename = req.files.Audio.map((el) => el.filename);
+          const audioFilename = req.compressedAudioFile;
           req.body.Audio = `https://pslink.world/api/public/images/audio/${audioFilename}`;
       } else if (typeof req.body.Audio === 'string') {
           req.body.Audio = req.body.Audio; // Use the string directly
@@ -210,11 +210,11 @@ exports.UpdateAudio = async function (req, res, next) {
 
         if (req.files) {
             if (req.files.Audio) {
-                const audioFilename = req.files.Audio.map((el) => el.filename);
+                const audioFilename = req.compressedAudioFile;
                 req.body.Audio = `https://pslink.world/api/public/images/audio/${audioFilename}`;
             }
             if (req.files.AudioImage) {
-              const audioImageFilename = req.files.AudioImage.map((el) => el.filename);
+              const audioImageFilename = req.audioImageFile;
               req.body.AudioImage = `https://pslink.world/api/public/images/audio/${audioImageFilename}`;
           }
         }

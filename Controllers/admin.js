@@ -187,6 +187,14 @@ exports.Create = async function (req, res, next) {
       throw new Error('Type is required.');
     }
 
+    const defaultAudioImages = [
+      "https://pslink.world/api/public/images/audio1.png",
+      "https://pslink.world/api/public/images/audio2.png",
+      "https://pslink.world/api/public/images/audio3.png",
+      "https://pslink.world/api/public/images/audio4.png",
+      "https://pslink.world/api/public/images/audio5.png"
+    ];
+
     const highestItem = await ADMIN.findOne().sort('-ItemId').exec();
     const nextId = highestItem ? highestItem.ItemId + 1 : 1;
 
@@ -222,10 +230,12 @@ exports.Create = async function (req, res, next) {
     if (req.files && req.files.Image) {
       const ImageFilename = req.files.Image.map((el) => el.filename);
       req.body.Image = `https://pslink.world/api/public/images/adminPrank/${ImageFilename}`;
-
-    } else if (typeof req.body.CoverImage === 'string') {
-      req.body.Image = req.body.Image; // Use the string directly
+    } else {
+      const randomIndex = Math.floor(Math.random() * defaultAudioImages.length);
+      req.body.Image = defaultAudioImages[randomIndex];
     }
+
+
 
     // Generate and add unique URL
     const baseWord = req.body.Name.replace(/\s+/g, '');
@@ -283,7 +293,10 @@ exports.SpinUpdate = async function (req, res, next) {
       if (req.files.File) {
         const FileFilename = req.files.File.map(el => el.filename).join(',');
         req.body.File = `https://pslink.world/api/public/images/adminPrank/${FileFilename}`;
-
+      }
+      if (req.files.Image) {
+        const ImageFilename = req.files.Image.map(el => el.filename).join(',');
+        req.body.Image = `https://pslink.world/api/public/images/adminPrank/${ImageFilename}`;
       }
     }
 

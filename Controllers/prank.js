@@ -156,6 +156,7 @@ exports.Create = async function (req, res, next) {
             File: dataCreate.File,
             Type: dataCreate.Type,
             Name: dataCreate.Name,
+            Image: dataCreate.Image || ""
         };
 
         res.status(201).json({
