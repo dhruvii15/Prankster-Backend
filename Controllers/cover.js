@@ -1,7 +1,8 @@
 const COVER = require('../models/cover');
 const USERCOVER = require('../models/userCover');
+const { Worker } = require('worker_threads');
 
-exports.Create = async function (req, res, next , ) {
+exports.Create = async function (req, res, next,) {
     try {
         const files = req.files;
         const hasWhitespaceInKey = obj => {
@@ -45,6 +46,7 @@ exports.Create = async function (req, res, next , ) {
                     TagName: TagNameArray, // Save parsed array
                     CoverName: req.body.CoverName,
                     Hide: req.body.Hide,
+                    Unsafe: req.body.Unsafe,
                     ItemId: nextId++, // Increment ItemId for each new image
                 };
 
@@ -61,6 +63,7 @@ exports.Create = async function (req, res, next , ) {
                 CoverURL: req.body.CoverURL, // Use CoverURL from request body
                 CoverPremium: req.body.CoverPremium,
                 Hide: req.body.Hide,
+                Unsafe: req.body.Unsafe,
                 ItemId: nextId, // Use the next ItemId
             };
 
@@ -99,43 +102,32 @@ exports.Emoji = async function (req, res, next) {
         }
 
         if (!req.body.page) {
-            throw new Error('page value are required')
+            throw new Error('Page value is required.');
         }
 
-        const page = parseInt(req.body.page, 10) || 1;
-        if (page < 1) {
-            throw new Error('Invalid page number');
+        const page = parseInt(req.body.page, 10);
+        if (isNaN(page) || page < 1) {
+            throw new Error('Invalid page number.');
         }
         const limit = 10;
 
-        // if (!page || isNaN(page) || page < 1) {
-        //     page = 1;
-        // }
-
+        // Fetch data from the database
         const emojiData = await COVER.find({ Category: "emoji", Hide: false })
             .sort({ viewCount: -1, ItemId: 1 })
-            .select('-_id -Category -__v -Hide')
-            .limit(limit * 1)
+            .select('-_id -Category -__v -Hide -Unsafe')
+            .limit(limit)
             .skip((page - 1) * limit)
             .exec();
 
-        const updatedEmojiData = emojiData.map(item => {
-            const { viewCount, ...rest } = item.toObject();
-            return {
-                ...rest,
-                CoverName: rest.CoverName || "",
-                TagName: rest.TagName || ""
-            };
-        });
+        // Run processing in an inline worker thread
+        const workerData = emojiData.map(item => item.toObject()); // Convert to plain objects
+        const result = await runInlineWorker(workerData);
 
         res.status(200).json({
             status: 1,
-            message: 'Data Found Successfully',
-            // count: emojiData.length,          // Number of items in the current page
-            // totalCount: count,             // Total number of items
-            // page: parseInt(page),          // Current page
-            // totalPages: Math.ceil(count / limit), // Total number of pages
-            data: updatedEmojiData
+            message: 'Data found successfully.',
+            data: result,
+            count: result.length, // Number of items in the current page
         });
     } catch (error) {
         res.status(400).json({
@@ -144,6 +136,38 @@ exports.Emoji = async function (req, res, next) {
         });
     }
 };
+
+// Helper to run inline worker
+function runInlineWorker(data) {
+    return new Promise((resolve, reject) => {
+        const worker = new Worker(`
+            const { parentPort, workerData } = require('worker_threads');
+
+            // Process the emoji data
+            const updatedEmojiData = workerData.map(item => {
+                const { viewCount, ...rest } = item;
+                return {
+                    ...rest,
+                    CoverName: rest.CoverName || "",
+                    TagName: rest.TagName || "",
+                };
+            });
+
+            // Send the result back to the main thread
+            parentPort.postMessage(updatedEmojiData);
+        `, {
+            eval: true,
+            workerData: data,
+        });
+
+        worker.on('message', resolve);
+        worker.on('error', reject);
+        worker.on('exit', code => {
+            if (code !== 0) reject(new Error(`Worker stopped with exit code ${code}`));
+        });
+    });
+}
+
 
 exports.Realistic = async function (req, res, next) {
     try {
@@ -165,7 +189,7 @@ exports.Realistic = async function (req, res, next) {
         const limit = 10;
 
         const realisticData = await COVER.find({ Category: "realistic", Hide: false }).sort({ viewCount: -1, ItemId: 1 })
-            .select('-_id -Category -__v -Hide')
+            .select('-_id -Category -__v -Hide -Unsafe')
             .limit(limit * 1)
             .skip((page - 1) * limit)
             .exec();

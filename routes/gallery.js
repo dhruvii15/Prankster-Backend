@@ -96,30 +96,29 @@ router.post('/create', uploadGallery.fields([
     { name: 'GalleryImage', maxCount: 1 }
 ]), async (req, res, next) => {
     try {
-        if (!req.files || !req.files['GalleryImage']) {
-            return res.status(400).json({ error: 'No gallery image uploaded.' });
-        }
-
-        const galleryImageFile = req.files['GalleryImage'][0];
         try {
-            const filename = await compressAndSaveGalleryImage(
-                galleryImageFile, 
-                './public/images/gallery',
-                {
-                    quality: 95,
-                    maxWidth: 1200,
-                    maxHeight: 1200
-                }
-            );
-            req.files['GalleryImage'][0].filename = filename;
-            
+            if (req.files && req.files['GalleryImage'] && req.files['GalleryImage'][0]) {
+                const galleryImageFile = req.files['GalleryImage'][0];
+                const filename = await compressAndSaveGalleryImage(
+                    galleryImageFile,
+                    './public/images/gallery',
+                    {
+                        quality: 95,
+                        maxWidth: 1200,
+                        maxHeight: 1200
+                    }
+                );
+                req.files['GalleryImage'][0].filename = filename;
+            }
+
+
             // Call the gallery creation controller
             galleryControllers.CreateGallery(req, res, next);
         } catch (error) {
             console.error('Error processing gallery image:', error);
-            return res.status(500).json({ 
+            return res.status(500).json({
                 error: 'Failed to process gallery image',
-                details: error.message 
+                details: error.message
             });
         }
     } catch (error) {
@@ -138,7 +137,7 @@ router.patch('/update/:id', uploadGallery.fields([
             const galleryImageFile = req.files['GalleryImage'][0];
             try {
                 const filename = await compressAndSaveGalleryImage(
-                    galleryImageFile, 
+                    galleryImageFile,
                     './public/images/gallery',
                     {
                         quality: 95,
@@ -149,9 +148,9 @@ router.patch('/update/:id', uploadGallery.fields([
                 req.files['GalleryImage'][0].filename = filename;
             } catch (error) {
                 console.error('Error processing gallery image:', error);
-                return res.status(500).json({ 
+                return res.status(500).json({
                     error: 'Failed to process gallery image',
-                    details: error.message 
+                    details: error.message
                 });
             }
         }

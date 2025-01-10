@@ -15,6 +15,26 @@ const adminData = new Schema({
         type: Boolean,
         enum: ['true', 'false']
     },
+    CoverSafe:
+    {
+        type: Boolean,
+        enum: ['true', 'false']
+    },
+    AudioSafe:
+    {
+        type: Boolean,
+        enum: ['true', 'false']
+    },
+    VideoSafe:
+    {
+        type: Boolean,
+        enum: ['true', 'false']
+    },
+    ImageSafe:
+    {
+        type: Boolean,
+        enum: ['true', 'false']
+    },
     Link: String,
     CoverImage: String,
     File: String,

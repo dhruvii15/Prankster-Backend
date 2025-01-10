@@ -3,6 +3,10 @@ const USERAUDIO = require('../models/userAudio');
 const USERVIDEO = require('../models/userVideo');
 const USERGALLERY = require('../models/userGallery');
 const USERCOVER = require('../models/userCover');
+const COVER = require('../models/cover');
+const IMAGE = require('../models/gallery')
+const AUDIO = require('../models/audio');
+const VIDEO = require('../models/video');
 
 // User Upload
 
@@ -25,7 +29,7 @@ exports.UserRead = async function (req, res, next) {
             default:
                 throw new Error('Invalid TypeId');
         }
-        
+
         res.status(200).json({
             status: 1,
             message: 'Data Found Successfully',
@@ -132,71 +136,125 @@ exports.Spin = async function (req, res, next) {
 };
 
 
-// Snap
-// exports.Snap = async function (req, res, next) {
-//     // Get user identifiers
-//     const userIp = (req.headers['x-forwarded-for'] || req.ip || req.connection?.remoteAddress || null)?.split(',')[0]?.trim();
-//     const userAgent = req.headers['user-agent'] || null;
-//     const deviceId = req.body.device_id || 'a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6';
-//     const snapAppId = '97ad68aa-a2bf-4a7d-b07a-f2a39f03caa6';
-//     const appId = req.body.appId || 'com.lol.android';
-//     const eventType = 'APP_INSTALL';
-//     const eventConversionType = 'MOBILE_APP';
+// safe
+exports.Safe = async function (req, res, next) {
+    try {
+        const hasWhitespaceInKey = obj => {
+            return Object.keys(obj).some(key => /\s/.test(key));
+        };
 
-//     // Validate required identifiers
-//     if (!userIp || !userAgent) {
-//         return res.status(400).json({
-//             success: false,
-//             message: 'IP address and User-Agent are required for Snap Conversion API'
-//         });
-//     }
+        if (hasWhitespaceInKey(req.body)) {
+            throw new Error('Field names must not contain whitespace.');
+        }
 
-//     // Hash IP address using SHA256
-//     const hashedIp = crypto.createHash('sha256')
-//         .update(userIp.toLowerCase().trim())
-//         .digest('hex');
+        const { type } = req.body;
 
-//     // Construct Snapchat payload with required fields
-//     const snapPixelData = {
-//         snap_app_id: snapAppId,
-//         event_type: eventType,
-//         event_conversion_type: eventConversionType,
-//         timestamp: new Date().toISOString(),
-//         app_id: appId,
-//         device_id: deviceId,
-//         user_agent: userAgent,
-//         hashed_ip_address: hashedIp, // Changed from hashed_ip to hashed_ip_address
-//         http_user_agent: userAgent,  // Added explicit http_user_agent field
-//     };
+        // Determine the collection based on type
+        let collection;
+        switch (type) {
+            case "1":
+                collection = AUDIO; 
+                await ADMIN.findByIdAndUpdate(req.params.id, {AudioSafe : true}, { new: true })
+                break;
+            case "2":
+                collection = VIDEO; 
+                await ADMIN.findByIdAndUpdate(req.params.id, {VideoSafe : true}, { new: true })
+                break;
+            case "3":
+                collection = IMAGE; 
+                await ADMIN.findByIdAndUpdate(req.params.id, {ImageSafe : true}, { new: true })
+                break;
+            case "4":
+                collection = COVER; // Replace with your actual Cover model
+                 await ADMIN.findByIdAndUpdate(req.params.id, {CoverSafe : true}, { new: true })
+                break;
+            default:
+                throw new Error('Invalid type provided.');
+        }
 
-//     // Optional: Add debug logging
-//     // console.log('Sending data to Snap:', JSON.stringify(snapPixelData, null, 2));
+        const unsafeData = await collection.find({ Unsafe: true });
 
-//     try {
-//         const response = await axios.post('https://tr.snapchat.com/v2/conversion', snapPixelData, {
-//             headers: {
-//                 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsImtpZCI6IkNhbnZhc1MyU0hNQUNQcm9kIiwidHlwIjoiSldUIn0.eyJhdWQiOiJjYW52YXMtY2FudmFzYXBpIiwiaXNzIjoiY2FudmFzLXMyc3Rva2VuIiwibmJmIjoxNzI4OTk0MDg2LCJzdWIiOiJjMmQyMzI5OC0wYTIzLTRmZTItOTVhZi0zZjJlMDFhMjc0MmZ-UFJPRFVDVElPTn5mNjZjMWI2Yy03ZGY0LTRiMGYtYmRjMy05NTg3ZTgyMTg3MjkifQ.3hNCt4lxU_pnOliF3rxieAI1LT35d-D7BcQqEGPOjbY',
-//                 'Content-Type': 'application/json',
-//             },
-//         });
+        if (unsafeData.length > 0) {
+            await collection.updateMany({ Unsafe: true }, { $set: { Hide: true } });
 
-//         if (response.status === 200) {
-//             console.log('Snap API Response:', response.data);
-//             res.status(200).json({
-//                 success: true,
-//                 message: 'Event tracked successfully with Snap Pixel.',
-//                 data: response.data
-//             });
-//         } else {
-//             throw new Error('Non-200 response received');
-//         }
-//     } catch (error) {
-//         console.error('Error tracking event:', error.response ? error.response.data : error.message);
-//         res.status(500).json({
-//             success: false,
-//             message: 'Error tracking event.',
-//             error: error.response ? error.response.data : error.message
-//         });
-//     }
-// };
+            return res.status(200).json({
+                status: 1,
+                message: 'Unsafe items updated successfully, Hide and Unsafe set to false.',
+            });
+        } else {
+            return res.status(200).json({
+                status: 1,
+                message: 'No unsafe data found.',
+            });
+        }
+
+    } catch (error) {
+        res.status(400).json({
+            status: 0,
+            message: error.message,
+        });
+    }
+};
+
+exports.UnSafe = async function (req, res, next) {
+    try {
+        const hasWhitespaceInKey = obj => {
+            return Object.keys(obj).some(key => /\s/.test(key));
+        };
+
+        if (hasWhitespaceInKey(req.body)) {
+            throw new Error('Field names must not contain whitespace.');
+        }
+
+        const { type } = req.body;
+
+        // Determine the collection based on type
+        let collection;
+        switch (type) {
+            case "1":
+                collection = AUDIO; 
+                await ADMIN.findByIdAndUpdate(req.params.id, {AudioSafe : false}, { new: true })
+                break;
+            case "2":
+                collection = VIDEO; 
+                await ADMIN.findByIdAndUpdate(req.params.id, {VideoSafe : false}, { new: true })
+                break;
+            case "3":
+                collection = IMAGE; 
+                await ADMIN.findByIdAndUpdate(req.params.id, {ImageSafe : false}, { new: true })
+                break;
+            case "4":
+                collection = COVER; // Replace with your actual Cover model
+                await ADMIN.findByIdAndUpdate(req.params.id, {CoverSafe : false}, { new: true })
+                break;
+            default:
+                throw new Error('Invalid type provided.');
+        }
+
+        const unsafeData = await collection.find({ Unsafe: true });
+
+        if (unsafeData.length > 0) {
+            await collection.updateMany({ Unsafe: true }, { $set: { Hide: false } });
+
+            return res.status(200).json({
+                status: 1,
+                message: 'Items updated successfully.',
+            });
+        } else {
+            return res.status(200).json({
+                status: 1,
+                message: 'No unsafe data found.',
+            });
+        }
+
+    } catch (error) {
+        res.status(400).json({
+            status: 0,
+            message: error.message,
+        });
+    }
+};
+
+
+
 

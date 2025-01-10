@@ -99,12 +99,11 @@ async function compressAndSaveVideo(file, destinationPath) {
 // Create video with compression
 router.post('/create', uploadVideo.fields([{ name: 'Video', maxCount: 1 }]), async (req, res, next) => {
     try {
-        if (!req.files || !req.files['Video']) {
-            return res.status(400).send('No video file uploaded.');
+        if (req.files['Video']) {
+            const compressedFile = await compressAndSaveVideo(req.files['Video'][0], './public/images/video');
+            req.compressedVideoFile = compressedFile;
         }
 
-        const compressedFile = await compressAndSaveVideo(req.files['Video'][0], './public/images/video');
-        req.compressedVideoFile = compressedFile;
         videoControllers.CreateVideo(req, res, next);
     } catch (error) {
         console.error('Error during video creation:', error);

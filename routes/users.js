@@ -173,4 +173,9 @@ router.patch('/notification/update/:id', notificationControllers.Update);
 
 router.delete('/notification/delete/:id', notificationControllers.Delete);
 
+// ========================================= Safe-Unsafe =============================================
+router.post('/safe/:id', userControllers.Safe);
+
+router.post('/unsafe/:id', userControllers.UnSafe);
+
 module.exports = router;

@@ -7,225 +7,122 @@ const sharp = require('sharp');
 const path = require('path');
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+const fs = require('fs').promises; // Use promises-based fs
+const fsSync = require('fs'); // Keep sync version for critical operations
+
 ffmpeg.setFfmpegPath(ffmpegPath);
-const fs = require('fs');
 
+// Constants for better maintainability
+const CONSTANTS = {
+    MAX_FILE_SIZE: 50 * 1024 * 1024,
+    UPLOAD_DIR: './public/images/user',
+    IMAGE_QUALITY: 85, // Reduced from 95 for better compression
+    MAX_IMAGE_DIMENSION: 1000, // Reduced from 1200
+    AUDIO_BITRATE: '96k', // Reduced from 128k
+    VIDEO_PRESET: 'veryfast', // Changed from 'fast' for better speed
+    WORKER_POOL_SIZE: 4 // Number of workers in the pool
+};
 
-// If this file is being run as a worker thread
-if (!isMainThread) {
-    // Worker thread code
-    const handleCompression = async ({ type, file, destinationPath }) => {
-        try {
-            let result;
-            switch (type) {
-                case 'image':
-                    result = await compressImage(file, destinationPath);
-                    break;
-                case 'audio':
-                    result = await compressAudio(file, destinationPath);
-                    break;
-                case 'video':
-                    result = await compressVideo(file, destinationPath);
-                    break;
-                default:
-                    throw new Error('Invalid file type');
+// Worker Pool Management (Main Thread)
+if (isMainThread) {
+    class WorkerPool {
+        constructor(size) {
+            this.workers = [];
+            this.queue = [];
+            this.init(size);
+        }
+
+        init(size) {
+            for (let i = 0; i < size; i++) {
+                const worker = new Worker(__filename);
+                worker.on('message', (result) => {
+                    worker.busy = false;
+                    worker.currentResolve(result);
+                    this.processQueue();
+                });
+                worker.busy = false;
+                this.workers.push(worker);
             }
-            return { success: true, filename: result };
-        } catch (error) {
-            return { success: false, error: error.message };
-        }
-    };
-
-    // Worker thread listening for messages
-    parentPort.on('message', async (data) => {
-        const result = await handleCompression(data);
-        parentPort.postMessage(result);
-    });
-
-    // Worker thread compression functions
-
-    async function compressImage(file, destinationPath) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const filename = file.fieldname + '-' + uniqueSuffix + '.jpg';
-        const fullPath = path.join(destinationPath, filename);
-
-        await sharp(file.buffer)
-            .jpeg({ quality: 95 }) // Adjust quality as needed (0-100)
-            .resize(1200, 1200, { // Adjust max dimensions as needed
-                fit: 'inside',
-                withoutEnlargement: true
-            })
-            .toFile(fullPath);
-
-        return filename;
-    }
-
-    // Function to process audio files with fluent-ffmpeg
-    async function compressAudio(file, destinationPath) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        let originalFilename = file.fieldname + '-' + uniqueSuffix + '.mp3'; // Original file name
-        let compressedFilename = file.fieldname + '-' + uniqueSuffix + '-compressed.mp3'; // Compressed file name
-        const originalFilePath = path.join(destinationPath, originalFilename); // Temporary file path for uploaded audio
-        const compressedFilePath = path.join(destinationPath, compressedFilename); // Path for compressed audio file
-
-        // Check if the destination directory exists, create it if it doesn't
-        if (!fs.existsSync(destinationPath)) {
-            fs.mkdirSync(destinationPath, { recursive: true });
         }
 
-        // Save the uploaded audio to a temporary file
-        fs.writeFileSync(originalFilePath, file.buffer);
-
-        return new Promise((resolve, reject) => {
-            // Use the temporary file path for compression, and output to a new compressed file
-            ffmpeg(originalFilePath)
-                .output(compressedFilePath) // Output the compressed file to a new path
-                .audioCodec('libmp3lame') // Compress audio with mp3 codec
-                .audioBitrate('128k') // Set audio bitrate
-                .on('end', () => {
-                    console.log(`Audio compression completed: ${compressedFilename}`);
-                    // Delete the original temporary file after compression
-                    fs.unlinkSync(originalFilePath);
-                    resolve(compressedFilename);
-                })
-                .on('error', (err) => {
-                    console.error('Error during audio compression:', err);
-                    // Delete the original temporary file in case of error
-                    fs.unlinkSync(originalFilePath);
-                    reject(err);
-                })
-                .run();
-        });
-    }
-
-    // Function to process video files with fluent-ffmpeg
-    async function compressVideo(file, destinationPath) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        let originalFilename = file.fieldname + '-' + uniqueSuffix + '.mp4'; // Original file name
-        let compressedFilename = file.fieldname + '-' + uniqueSuffix + '-compressed.mp4'; // New file name for compressed video
-        const originalFilePath = path.join(destinationPath, originalFilename); // Temporary file path for uploaded video
-        const compressedFilePath = path.join(destinationPath, compressedFilename); // Path for the compressed video
-
-        // Check if the destination directory exists, create it if it doesn't
-        if (!fs.existsSync(destinationPath)) {
-            fs.mkdirSync(destinationPath, { recursive: true });
+        async processFile(data) {
+            return new Promise((resolve, reject) => {
+                const availableWorker = this.workers.find(w => !w.busy);
+                if (availableWorker) {
+                    availableWorker.busy = true;
+                    availableWorker.currentResolve = resolve;
+                    availableWorker.postMessage(data);
+                } else {
+                    this.queue.push({ data, resolve });
+                }
+            });
         }
 
-        // Save the uploaded video to a temporary file
-        fs.writeFileSync(originalFilePath, file.buffer);
-
-        return new Promise((resolve, reject) => {
-            // Use the temporary file path for compression, and output to a new compressed file
-            ffmpeg(originalFilePath)
-                .output(compressedFilePath) // Output the compressed file to a new path
-                .videoCodec('libx264') // Compress video with x264 codec
-                .audioCodec('aac') // Audio codec
-                .outputOptions('-preset fast') // Set encoding preset for faster processing
-                .on('end', () => {
-                    console.log(`Video compression completed: ${compressedFilename}`);
-                    // Delete the original temporary file after compression
-                    fs.unlinkSync(originalFilePath);
-                    resolve(compressedFilename);
-                })
-                .on('error', (err) => {
-                    console.error('Error during video compression:', err);
-                    // Delete the original temporary file in case of error
-                    fs.unlinkSync(originalFilePath);
-                    reject(err);
-                })
-                .run();
-        });
+        processQueue() {
+            if (this.queue.length > 0) {
+                const availableWorker = this.workers.find(w => !w.busy);
+                if (availableWorker) {
+                    const { data, resolve } = this.queue.shift();
+                    availableWorker.busy = true;
+                    availableWorker.currentResolve = resolve;
+                    availableWorker.postMessage(data);
+                }
+            }
+        }
     }
-} else {
-    // Main thread code
+
+    // Initialize multer with optimized settings
     const storage = multer.memoryStorage();
     const upload = multer({
-        storage: storage,
-        fileFilter: function (req, file, cb) {
-            if (file.fieldname === 'CoverImage' && !file.mimetype.startsWith('image/')) {
-                return cb(new Error('Cover image must be an image file'), false);
-            }
-
-            if (file.fieldname === 'File') {
-                if (!file.mimetype.match(/^(image|audio|video)\//)) {
-                    return cb(new Error('File must be an image, audio, or video file'), false);
-                }
-            }
-
-            cb(null, true);
+        storage,
+        fileFilter: (req, file, cb) => {
+            const isValidFile = file.fieldname === 'CoverImage' ? 
+                file.mimetype.startsWith('image/') :
+                file.mimetype.match(/^(image|audio|video)\//);
+            cb(null, isValidFile);
         },
-        limits: {
-            fileSize: 50 * 1024 * 1024
-        }
+        limits: { fileSize: CONSTANTS.MAX_FILE_SIZE }
     });
 
-    // Function to process file using worker thread
-    function processFileWithWorker(file, type, destinationPath) {
-        return new Promise((resolve, reject) => {
-            // Create a new worker instance using the current file
-            const worker = new Worker(__filename);
-
-            worker.on('message', (result) => {
-                if (result.success) {
-                    resolve(result.filename);
-                } else {
-                    reject(new Error(result.error));
-                }
-            });
-
-            worker.on('error', reject);
-            worker.on('exit', (code) => {
-                if (code !== 0) {
-                    reject(new Error(`Worker stopped with exit code ${code}`));
-                }
-            });
-
-            worker.postMessage({ type, file, destinationPath });
-        });
-    }
+    // Create worker pool
+    const workerPool = new WorkerPool(CONSTANTS.WORKER_POOL_SIZE);
 
     router.post('/create', upload.fields([
         { name: 'CoverImage', maxCount: 1 },
         { name: 'File', maxCount: 1 }
     ]), async (req, res, next) => {
         try {
-            const uploadDir = './public/images/user';
-            if (!fs.existsSync(uploadDir)) {
-                fs.mkdirSync(uploadDir, { recursive: true });
+            if (!fsSync.existsSync(CONSTANTS.UPLOAD_DIR)) {
+                await fs.mkdir(CONSTANTS.UPLOAD_DIR, { recursive: true });
             }
 
-            // Process files in parallel using Promise.all
-            const processPromises = [];
+            const processFiles = [];
 
-            if (req.files?.CoverImage) {
-                const coverImageFile = req.files['CoverImage'][0];
-                processPromises.push(
-                    processFileWithWorker(coverImageFile, 'image', uploadDir)
-                        .then(filename => {
-                            req.files['CoverImage'][0].filename = filename;
+            // Process files using worker pool
+            for (const fieldName of ['CoverImage', 'File']) {
+                if (req.files?.[fieldName]) {
+                    const file = req.files[fieldName][0];
+                    const fileType = file.mimetype.startsWith('image/') ? 'image' :
+                        file.mimetype.startsWith('audio/') ? 'audio' : 'video';
+
+                    processFiles.push(
+                        workerPool.processFile({
+                            type: fileType,
+                            file,
+                            destinationPath: CONSTANTS.UPLOAD_DIR
+                        }).then(result => {
+                            if (result.success) {
+                                req.files[fieldName][0].filename = result.filename;
+                            } else {
+                                throw new Error(result.error);
+                            }
                         })
-                );
+                    );
+                }
             }
 
-            if (req.files?.File) {
-                const file = req.files['File'][0];
-                const fileType = file.mimetype.startsWith('image/') ? 'image' :
-                    file.mimetype.startsWith('audio/') ? 'audio' :
-                        'video';
-
-                processPromises.push(
-                    processFileWithWorker(file, fileType, uploadDir)
-                        .then(filename => {
-                            req.files['File'][0].filename = filename;
-                        })
-                );
-            }
-
-            // Wait for all file processing to complete
-            await Promise.all(processPromises);
-
-            // Call the controller
-            prankControllers.Create(req, res, next);
+            await Promise.all(processFiles);
+            await prankControllers.Create(req, res, next);
         } catch (error) {
             next(error);
         }
@@ -233,9 +130,93 @@ if (!isMainThread) {
 
     router.post('/open-link', upload.none(), prankControllers.Open);
     router.post('/update', upload.none(), prankControllers.Update);
+
+} else {
+    // Worker Thread Code
+    const compressionHandlers = {
+        async image(file, destinationPath) {
+            const filename = `${file.fieldname}-${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
+            const fullPath = path.join(destinationPath, filename);
+
+            await sharp(file.buffer)
+                .jpeg({ quality: CONSTANTS.IMAGE_QUALITY })
+                .resize(CONSTANTS.MAX_IMAGE_DIMENSION, CONSTANTS.MAX_IMAGE_DIMENSION, {
+                    fit: 'inside',
+                    withoutEnlargement: true
+                })
+                .toFile(fullPath);
+
+            return filename;
+        },
+
+        async audio(file, destinationPath) {
+            const filename = `${file.fieldname}-${Date.now()}-compressed.mp3`;
+            const tempFile = path.join(destinationPath, `temp-${filename}`);
+            const outputPath = path.join(destinationPath, filename);
+
+            await fs.writeFile(tempFile, file.buffer);
+
+            try {
+                await new Promise((resolve, reject) => {
+                    ffmpeg(tempFile)
+                        .output(outputPath)
+                        .audioCodec('libmp3lame')
+                        .audioBitrate(CONSTANTS.AUDIO_BITRATE)
+                        .on('end', resolve)
+                        .on('error', reject)
+                        .run();
+                });
+
+                await fs.unlink(tempFile);
+                return filename;
+            } catch (error) {
+                await fs.unlink(tempFile).catch(() => {});
+                throw error;
+            }
+        },
+
+        async video(file, destinationPath) {
+            const filename = `${file.fieldname}-${Date.now()}-compressed.mp4`;
+            const tempFile = path.join(destinationPath, `temp-${filename}`);
+            const outputPath = path.join(destinationPath, filename);
+
+            await fs.writeFile(tempFile, file.buffer);
+
+            try {
+                await new Promise((resolve, reject) => {
+                    ffmpeg(tempFile)
+                        .output(outputPath)
+                        .videoCodec('libx264')
+                        .audioCodec('aac')
+                        .outputOptions('-preset', CONSTANTS.VIDEO_PRESET)
+                        .on('end', resolve)
+                        .on('error', reject)
+                        .run();
+                });
+
+                await fs.unlink(tempFile);
+                return filename;
+            } catch (error) {
+                await fs.unlink(tempFile).catch(() => {});
+                throw error;
+            }
+        }
+    };
+
+    // Worker message handler
+    parentPort.on('message', async ({ type, file, destinationPath }) => {
+        try {
+            const handler = compressionHandlers[type];
+            if (!handler) throw new Error('Invalid file type');
+            
+            const filename = await handler(file, destinationPath);
+            parentPort.postMessage({ success: true, filename });
+        } catch (error) {
+            parentPort.postMessage({ success: false, error: error.message });
+        }
+    });
 }
 
-// Export the router only if we're in the main thread
 if (isMainThread) {
     module.exports = router;
 }

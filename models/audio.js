@@ -19,6 +19,11 @@ const audioSchemaData = new Schema({
         type: Boolean,
         required: true
     },
+    Unsafe: 
+    {
+        type: Boolean,
+        required: true
+    },
     viewCount: 
     {
         type: Number,

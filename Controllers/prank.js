@@ -1,50 +1,102 @@
 const PRANK = require('../models/prank');
 const ADMIN = require('../models/admin');
-const COVER = require('../models/cover');
-const AUDIO = require('../models/audio');
-const VIDEO = require('../models/video');
-const GALLERY = require('../models/gallery');
 const USERAUDIO = require('../models/userAudio');
 const USERVIDEO = require('../models/userVideo');
 const USERGALLERY = require('../models/userGallery');
 const USERCOVER = require('../models/userCover');
-const crypto = require('crypto');
 var path = require('path');
+const { Worker } = require('worker_threads');
 
+class BackgroundWorker {
+    static runWorker(workerScript, workerData) {
+        return new Promise((resolve, reject) => {
+            const worker = new Worker(`
+                const { parentPort, workerData } = require('worker_threads');
+                const mongoose = require('mongoose');
+                const crypto = require('crypto');
 
-function generateUniqueName(baseWord, length = 15) {
-    const randomPart = crypto.randomBytes(length).toString('hex').slice(0, length);
-    return `${baseWord}${randomPart}$${randomPart}$$${randomPart}`;
-}
+                mongoose.connect('mongodb+srv://prankster:prankster%402024@cluster0.ea1xm.mongodb.net/Prankster', { useNewUrlParser: true, useUnifiedTopology: true }).catch(console.error);
 
-async function isUrlUnique(url) {
-    const prankCount = await PRANK.countDocuments({ Link: url });
-    const adminCount = await ADMIN.countDocuments({ Link: url });
-    return prankCount === 0 && adminCount === 0;
-}
+                const prankSchema = new mongoose.Schema({ Link: String });
+                const adminSchema = new mongoose.Schema({ Link: String });
+                const PRANK = mongoose.model('Prank', prankSchema);
+                const ADMIN = mongoose.model('Admin', adminSchema);
 
-async function createUniqueUrl(baseWord) {
-    let isUnique = false;
-    let url;
-    while (!isUnique) {
-        const uniqueName = generateUniqueName(baseWord);
-        url = `https://pslink.world/${uniqueName}`;
-        isUnique = await isUrlUnique(url);
+                ${workerScript}
+
+                parentPort.on('message', async (data) => {
+                    try {
+                        const result = await processData(data);
+                        await mongoose.disconnect();
+                        parentPort.postMessage({ success: true, data: result });
+                    } catch (error) {
+                        await mongoose.disconnect();
+                        parentPort.postMessage({ success: false, error: error.message });
+                    }
+                });
+            `, { eval: true });
+
+            worker.on('message', resolve);
+            worker.on('error', reject);
+            worker.on('exit', (code) => code !== 0 && reject(new Error(`Worker stopped with exit code ${code}`)));
+
+            worker.postMessage({ ...workerData, mongoUri: 'mongodb+srv://prankster:prankster%402024@cluster0.ea1xm.mongodb.net/Prankster' });
+        });
     }
-    return url;
+
+    static async isUrlUnique(url) {
+        return (await this.runWorker(`
+            async function processData({ url }) {
+                return (await PRANK.countDocuments({ Link: url }) + await ADMIN.countDocuments({ Link: url })) === 0;
+            }
+        `, { url })).data;
+    }
+
+    static async createUniqueUrl(baseWord) {
+        return (await this.runWorker(`
+            async function processData({ baseWord }) {
+                let url, isUnique;
+                do {
+                    const randomPart = crypto.randomBytes(15).toString('hex').slice(0, 15);
+                    url = \`https://pslink.world/\${baseWord}\${randomPart}\${randomPart}\${randomPart}\`;
+                    isUnique = (await PRANK.countDocuments({ Link: url }) + await ADMIN.countDocuments({ Link: url })) === 0;
+                } while (!isUnique);
+                return url;
+            }
+        `, { baseWord })).data;
+    }
+
+    static async updateViewCount(type, fileUrl) {
+        return (await this.runWorker(`
+            async function processData({ type, fileUrl }) {
+                const schemas = {
+                    audio: new mongoose.Schema({ Audio: String, viewCount: Number }),
+                    video: new mongoose.Schema({ Video: String, viewCount: Number }),
+                    gallery: new mongoose.Schema({ GalleryImage: String, viewCount: Number }),
+                    cover: new mongoose.Schema({ CoverURL: String, viewCount: Number })
+                };
+                const models = Object.fromEntries(Object.entries(schemas).map(([key, schema]) => [key, mongoose.model(key.charAt(0).toUpperCase() + key.slice(1), schema)]));
+                await models.cover.findOneAndUpdate({ CoverURL: fileUrl }, { $inc: { viewCount: 1 } });
+                if (type in models) await models[type].findOneAndUpdate({ [type === 'gallery' ? 'GalleryImage' : type.charAt(0).toUpperCase() + type.slice(1)]: fileUrl }, { $inc: { viewCount: 1 } });
+                return true;
+            }
+        `, { type, fileUrl })).data;
+    }
 }
 
+// Modified Create function
 exports.Create = async function (req, res, next) {
     try {
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
         };
+
         if (hasWhitespaceInKey(req.body)) {
             throw new Error('Field names must not contain whitespace.');
         }
 
         if (!req.body.Type) {
-            throw new Error('Type are required.');
+            throw new Error('Type is required.');
         }
 
         const generateName = async (Model, prefix, field) => {
@@ -125,28 +177,19 @@ exports.Create = async function (req, res, next) {
         // Handle Image
         req.body.Image = req.body.ImageURL;
 
-        // Generate and add unique URL
-        const baseWord = req.body.Name.replace(/\s+/g, ''); // You can change this or make it dynamic
-        req.body.Link = await createUniqueUrl(baseWord);
+        // Generate unique URL in background
+        const baseWord = req.body.Name.replace(/\s+/g, '');
+        const uniqueUrl = await BackgroundWorker.createUniqueUrl(baseWord);
+        req.body.Link = uniqueUrl;
+
+        // Create the prank record
         let dataCreate = await PRANK.create(req.body);
 
-        await COVER.findOneAndUpdate({ CoverURL: req.body.CoverImage }, { $inc: { viewCount: 1 } }, { new: true });
-
-
-        switch (req.body.Type) {
-            case 'audio':
-                await AUDIO.findOneAndUpdate({ Audio: req.body.File }, { $inc: { viewCount: 1 } }, { new: true });
-                break;
-            case 'video':
-                await VIDEO.findOneAndUpdate({ Video: req.body.File }, { $inc: { viewCount: 1 } }, { new: true });
-                break;
-            case 'gallery':
-                await GALLERY.findOneAndUpdate({ GalleryImage: req.body.File }, { $inc: { viewCount: 1 } }, { new: true });
-                break;
-            default:
-                throw new Error('Invalid Type');
-        }
-
+        // Update view counts in background
+        BackgroundWorker.updateViewCount(req.body.Type, req.body.File)
+            .catch(error => {
+                console.error('Error updating view counts:', error);
+            });
 
         const responseData = {
             id: dataCreate._id,

@@ -117,14 +117,12 @@ router.post('/create', uploadAudio.fields([
     { name: 'AudioImage', maxCount: 1 }
 ]), async (req, res, next) => {
     try {
-        if (!req.files || !req.files['Audio']) {
-            return res.status(400).send('No audio file uploaded.');
+        if (req.files['Audio']) {
+            // Compress and save the audio file
+            const compressedFile = await compressAndSaveAudio(req.files['Audio'][0], './public/images/audio');
+            req.compressedAudioFile = compressedFile;
+
         }
-
-        // Compress and save the audio file
-        const compressedFile = await compressAndSaveAudio(req.files['Audio'][0], './public/images/audio');
-        req.compressedAudioFile = compressedFile;
-
         // Save the audio image if provided
         if (req.files['AudioImage']) {
             const audioImageFilename = saveAudioImage(req.files['AudioImage'][0], './public/images/audio');
