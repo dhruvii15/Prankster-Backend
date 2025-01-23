@@ -9,6 +9,7 @@ const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const fs = require('fs').promises; // Use promises-based fs
 const fsSync = require('fs'); // Keep sync version for critical operations
+const sanitizeBody = require('../middlewares/sanitizeBody');
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 
@@ -90,7 +91,7 @@ if (isMainThread) {
     router.post('/create', upload.fields([
         { name: 'CoverImage', maxCount: 1 },
         { name: 'File', maxCount: 1 }
-    ]), async (req, res, next) => {
+    ]), sanitizeBody ,  async (req, res, next) => {
         try {
             if (!fsSync.existsSync(CONSTANTS.UPLOAD_DIR)) {
                 await fs.mkdir(CONSTANTS.UPLOAD_DIR, { recursive: true });
@@ -128,8 +129,8 @@ if (isMainThread) {
         }
     });
 
-    router.post('/open-link', upload.none(), prankControllers.Open);
-    router.post('/update', upload.none(), prankControllers.Update);
+    router.post('/open-link', upload.none(), sanitizeBody ,  prankControllers.Open);
+    router.post('/update', upload.none(), sanitizeBody ,  prankControllers.Update);
 
 } else {
     // Worker Thread Code

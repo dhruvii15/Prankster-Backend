@@ -5,6 +5,7 @@ const multer = require('multer');
 const { Worker, isMainThread, parentPort, workerData } = require('worker_threads');
 const path = require('path');
 const fs = require('fs');
+const sanitizeBody = require('../middlewares/sanitizeBody');
 
 // Define storage for category image (in memory)
 const storage = multer.memoryStorage();
@@ -91,7 +92,7 @@ async function compressAndSaveCategoryImage(file, destinationPath, options = {})
 }
 
 // Create category with image compression
-router.post('/create', upload.single('CategoryImage'), async (req, res, next) => {
+router.post('/create', upload.single('CategoryImage'), sanitizeBody , async (req, res, next) => {
     try {
         if (req.file) {
             try {
@@ -123,13 +124,13 @@ router.post('/create', upload.single('CategoryImage'), async (req, res, next) =>
 });
 
 // Find categories
-router.post('', upload.none(), categoryControllers.Found);
+router.post('', upload.none(), sanitizeBody , categoryControllers.Found);
 
 // Read category
-router.post('/read', categoryControllers.Read);
+router.post('/read', sanitizeBody , categoryControllers.Read);
 
 // Update category with image compression
-router.patch('/update/:id', upload.single('CategoryImage'), async (req, res, next) => {
+router.patch('/update/:id', upload.single('CategoryImage'), sanitizeBody ,  async (req, res, next) => {
     try {
         if (req.file) {
             try {
@@ -161,6 +162,6 @@ router.patch('/update/:id', upload.single('CategoryImage'), async (req, res, nex
 });
 
 // Delete category
-router.delete('/delete/:id', categoryControllers.Delete);
+router.delete('/delete/:id', sanitizeBody , categoryControllers.Delete);
 
 module.exports = router;

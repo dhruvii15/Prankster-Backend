@@ -5,6 +5,7 @@ const multer = require('multer');
 const { Worker, isMainThread, parentPort, workerData } = require('worker_threads');
 const path = require('path');
 const fs = require('fs');
+const sanitizeBody = require('../middlewares/sanitizeBody');
 
 // Define storage for the video file (in memory)
 const storageVideo = multer.memoryStorage();
@@ -97,7 +98,7 @@ async function compressAndSaveVideo(file, destinationPath) {
 }
 
 // Create video with compression
-router.post('/create', uploadVideo.fields([{ name: 'Video', maxCount: 1 }]), async (req, res, next) => {
+router.post('/create', uploadVideo.fields([{ name: 'Video', maxCount: 1 }]), sanitizeBody , async (req, res, next) => {
     try {
         if (req.files['Video']) {
             const compressedFile = await compressAndSaveVideo(req.files['Video'][0], './public/images/video');
@@ -112,7 +113,7 @@ router.post('/create', uploadVideo.fields([{ name: 'Video', maxCount: 1 }]), asy
 });
 
 // Update video with compression
-router.patch('/update/:id', uploadVideo.fields([{ name: 'Video', maxCount: 1 }]), async (req, res, next) => {
+router.patch('/update/:id', uploadVideo.fields([{ name: 'Video', maxCount: 1 }]), sanitizeBody , async (req, res, next) => {
     try {
         if (req.files?.['Video']) {
             const compressedFile = await compressAndSaveVideo(req.files['Video'][0], './public/images/video');
@@ -126,9 +127,9 @@ router.patch('/update/:id', uploadVideo.fields([{ name: 'Video', maxCount: 1 }])
 });
 
 // Read video
-router.post('/read', videoControllers.ReadVideo);
+router.post('/read', sanitizeBody , videoControllers.ReadVideo);
 
 // Delete video
-router.delete('/delete/:id', videoControllers.DeleteVideo);
+router.delete('/delete/:id', sanitizeBody , videoControllers.DeleteVideo);
 
 module.exports = router;

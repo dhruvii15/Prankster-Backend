@@ -3,12 +3,6 @@ const ADMIN = require('../models/admin');
 
 exports.Create = async function (req, res, next) {
     try {
-        const sanitizedBody = Object.keys(req.body).reduce((acc, key) => {
-            const value = req.body[key];
-            acc[key] = typeof value === 'string' ? value.trim() : value;
-            return acc;
-        }, {});
-        req.body = sanitizedBody
         const newAd = await ADS.create(req.body);
 
         res.status(201).json({

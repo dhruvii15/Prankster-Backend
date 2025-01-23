@@ -5,6 +5,7 @@ const multer = require('multer');
 const { Worker, isMainThread, parentPort, workerData } = require('worker_threads');
 const path = require('path');
 const fs = require('fs');
+const sanitizeBody = require('../middlewares/sanitizeBody');
 
 // Define storage for the gallery file (in memory)
 const storageGallery = multer.memoryStorage();
@@ -94,7 +95,7 @@ async function compressAndSaveGalleryImage(file, destinationPath, options = {}) 
 router.post('/create', uploadGallery.fields([
     { name: 'Gallery', maxCount: 1 },
     { name: 'GalleryImage', maxCount: 1 }
-]), async (req, res, next) => {
+]), sanitizeBody ,  async (req, res, next) => {
     try {
         try {
             if (req.files && req.files['GalleryImage'] && req.files['GalleryImage'][0]) {
@@ -131,7 +132,7 @@ router.post('/create', uploadGallery.fields([
 router.patch('/update/:id', uploadGallery.fields([
     { name: 'Gallery', maxCount: 1 },
     { name: 'GalleryImage', maxCount: 1 }
-]), async (req, res, next) => {
+]), sanitizeBody ,  async (req, res, next) => {
     try {
         if (req.files?.['GalleryImage']) {
             const galleryImageFile = req.files['GalleryImage'][0];
@@ -164,9 +165,9 @@ router.patch('/update/:id', uploadGallery.fields([
 });
 
 // Read gallery
-router.post('/read', galleryControllers.ReadGallery);
+router.post('/read', sanitizeBody , galleryControllers.ReadGallery);
 
 // Delete gallery
-router.delete('/delete/:id', galleryControllers.DeleteGallery);
+router.delete('/delete/:id', sanitizeBody , galleryControllers.DeleteGallery);
 
 module.exports = router;

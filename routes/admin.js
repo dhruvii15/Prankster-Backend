@@ -6,6 +6,7 @@ const sharp = require('sharp');
 const path = require('path');
 const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs');
+const sanitizeBody = require('../middlewares/sanitizeBody');
 
 // Use memory storage for processing before saving
 const storage = multer.memoryStorage();
@@ -111,18 +112,18 @@ const upload = multer({
 });
 
 /* Admin Routes */
-router.post('/signup', AdminControllers.AdminSignup);
-router.post('/login', AdminControllers.AdminLogin);
-router.get('/logout', (req, res) => {
+router.post('/signup', sanitizeBody , AdminControllers.AdminSignup);
+router.post('/login', sanitizeBody , AdminControllers.AdminLogin);
+router.get('/logout', sanitizeBody , (req, res) => {
     req.session.destroy();
     res.json({ message: 'Logged out successfully' });
 });
-router.get('/read', AdminControllers.AdminRead);
-router.patch('/update/:id', AdminControllers.AdminUpdate);
-router.patch('/Forgetpass', AdminControllers.Forgetpass);
+router.get('/read', sanitizeBody , AdminControllers.AdminRead);
+router.patch('/update/:id', sanitizeBody , AdminControllers.AdminUpdate);
+router.patch('/Forgetpass', sanitizeBody , AdminControllers.Forgetpass);
 
 // Admin Spin Prank routes with file handling
-router.post('/spin/create', upload.fields([
+router.post('/spin/create', sanitizeBody , upload.fields([
     { name: 'CoverImage', maxCount: 1 },
     { name: 'File', maxCount: 1 },
     { name: 'Image', maxCount: 1 }
@@ -180,10 +181,10 @@ router.post('/spin/create', upload.fields([
     }
 });
 
-router.post('/spin/read', AdminControllers.SpinRead);
+router.post('/spin/read', sanitizeBody , AdminControllers.SpinRead);
 
 // Update route with file handling
-router.patch('/spin/update/:id', upload.fields([
+router.patch('/spin/update/:id', sanitizeBody , upload.fields([
     { name: 'CoverImage', maxCount: 1 },
     { name: 'File', maxCount: 1 },
     { name: 'Image', maxCount: 1 }
@@ -243,6 +244,6 @@ router.patch('/spin/update/:id', upload.fields([
     }
 });
 
-router.delete('/spin/delete/:id', AdminControllers.SpinDelete);
+router.delete('/spin/delete/:id', sanitizeBody , AdminControllers.SpinDelete);
 
 module.exports = router;

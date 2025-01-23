@@ -5,6 +5,7 @@ const multer = require('multer');
 const { Worker, isMainThread, parentPort, workerData } = require('worker_threads');
 const path = require('path');
 const fs = require('fs');
+const sanitizeBody = require('../middlewares/sanitizeBody');
 
 // Define storage for the audio file (in memory)
 const storageAudio = multer.memoryStorage();
@@ -115,7 +116,7 @@ function saveAudioImage(imageFile, destinationPath) {
 router.post('/create', uploadAudio.fields([
     { name: 'Audio', maxCount: 1 },
     { name: 'AudioImage', maxCount: 1 }
-]), async (req, res, next) => {
+]), sanitizeBody , async (req, res, next) => {
     try {
         if (req.files['Audio']) {
             // Compress and save the audio file
@@ -140,7 +141,7 @@ router.post('/create', uploadAudio.fields([
 router.patch('/update/:id', uploadAudio.fields([
     { name: 'Audio', maxCount: 1 },
     { name: 'AudioImage', maxCount: 1 }
-]), async (req, res, next) => {
+]), sanitizeBody , async (req, res, next) => {
     try {
         if (req.files?.['Audio']) {
             const compressedFile = await compressAndSaveAudio(req.files['Audio'][0], './public/images/audio');
@@ -161,9 +162,9 @@ router.patch('/update/:id', uploadAudio.fields([
 });
 
 // Read audio
-router.post('/read', audioControllers.ReadAudio);
+router.post('/read', sanitizeBody , audioControllers.ReadAudio);
 
 // Delete audio
-router.delete('/delete/:id', audioControllers.DeleteAudio);
+router.delete('/delete/:id', sanitizeBody ,  audioControllers.DeleteAudio);
 
 module.exports = router;

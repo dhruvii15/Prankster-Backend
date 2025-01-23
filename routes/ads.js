@@ -1,17 +1,18 @@
 var express = require('express');
 var router = express.Router();
+const sanitizeBody = require('../middlewares/sanitizeBody');
 const adsControllers = require('../Controllers/ads')
 
 /* GET service listing. */
-router.post('/create', adsControllers.Create);
+router.post('/create', sanitizeBody ,adsControllers.Create);
 
-router.post('/read', adsControllers.Read);
+router.post('/read', sanitizeBody , adsControllers.Read);
 
-router.post('', adsControllers.Found);
+router.post('', sanitizeBody , adsControllers.Found);
 
-router.patch('/update/:id', adsControllers.Update);
+router.patch('/update/:id', sanitizeBody , adsControllers.Update);
 
-router.delete('/delete/:id', adsControllers.Delete);
+router.delete('/delete/:id', sanitizeBody , adsControllers.Delete);
 
 
 module.exports = router;

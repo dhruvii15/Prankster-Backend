@@ -48,7 +48,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Disable directory listing
 app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
-
 app.use('/api/', usersRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/ads', adsRouter);
