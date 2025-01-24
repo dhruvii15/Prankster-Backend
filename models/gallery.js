@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { connection1 } = require('../db');
 
 const Schema = mongoose.Schema;
 
@@ -27,6 +28,6 @@ const gallerySchemaData = new Schema({
         type: Number
     }
 });
-const GALLERY = mongoose.model('Gallery', gallerySchemaData);
+const GALLERY = connection1.model('Gallery', gallerySchemaData);
 
 module.exports =  GALLERY ;

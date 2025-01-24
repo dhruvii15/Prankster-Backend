@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { connection1 } = require('../db');
 
 const Schema = mongoose.Schema;
 
@@ -46,4 +47,4 @@ const adminData = new Schema({
 });
 
 
-module.exports = mongoose.model('admin', adminData)
+module.exports = connection1.model('Admin', adminData);

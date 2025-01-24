@@ -15,17 +15,8 @@ var audioRouter = require('./routes/audio');
 var videoRouter = require('./routes/video');
 var galleryRouter = require('./routes/gallery');
 var prankRouter = require('./routes/prank');
-// var spinRouter = require('./routes/spin');
 
 var app = express();
-
-
-// MongoDB connection
-const mongoUri = process.env.MONGODB_URI; 
-
-mongoose.connect(mongoUri)
-  .then(() => console.log('Connected to MongoDB!'))
-  .catch((error) => console.error('MongoDB connection error:', error.message));
 
 // Middleware configuration
 app.use((req, res, next) => {
@@ -56,7 +47,6 @@ app.use('/api/audio', audioRouter);
 app.use('/api/video', videoRouter);
 app.use('/api/gallery', galleryRouter);
 app.use('/api/prank', prankRouter);
-// app.use('/api/spin', spinRouter);
 
 
 // Logging middleware (Ensure this is correctly placed)

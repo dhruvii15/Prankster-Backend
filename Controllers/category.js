@@ -69,6 +69,8 @@ exports.Create = async function (req, res, next) {
 
 exports.Found = async function (req, res, next) {
     try {
+        console.log(req.body);
+        
         const hasWhitespaceInKey = obj => {
             return Object.keys(obj).some(key => /\s/.test(key));
         };

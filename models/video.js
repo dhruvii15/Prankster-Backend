@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+const { connection1 } = require('../db');
 const Schema = mongoose.Schema;
 
 const videoSchemaData = new Schema({
@@ -12,6 +13,7 @@ const videoSchemaData = new Schema({
     },
     ArtistName: String,
     CategoryId: Number,
+    LanguageId: Number,
     ItemId: Number,
     Hide: 
     {
@@ -28,6 +30,6 @@ const videoSchemaData = new Schema({
         type: Number
     }
 });
-const VIDEO = mongoose.model('Video', videoSchemaData);
+const VIDEO = connection1.model('Video', videoSchemaData);
 
 module.exports =  VIDEO ;

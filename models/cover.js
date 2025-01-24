@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const { connection1 } = require('../db');
+
 const Schema = mongoose.Schema;
 
 const coverData = new Schema({
@@ -35,4 +37,4 @@ const coverData = new Schema({
     ItemId : Number
 });
 
-module.exports = mongoose.model('cover',coverData)
+module.exports = connection1.model('cover',coverData)

@@ -1,6 +1,8 @@
-const CATEGORY = require('../models/category');
 const GALLERY = require('../models/gallery')
 const USERGALLERY = require('../models/userGallery')
+
+const GALLERY2 = require('../models2/gallery')
+const USERGALLERY2 = require('../models2/userGallery')
 
 exports.CreateGallery = async function (req, res, next) {
     try {
@@ -27,16 +29,16 @@ exports.CreateGallery = async function (req, res, next) {
         }
 
         // Get the highest existing ItemId
-        const highestItem = await GALLERY.findOne().sort('-ItemId').exec();
+        const highestItem = await GALLERY2.findOne().sort('-ItemId').exec();
         const nextId = highestItem ? highestItem.ItemId + 1 : 1;
 
         // Assign the new ID to req.body.ItemId
         req.body.ItemId = nextId;
 
-        const dataCreate = await GALLERY.create(req.body);
+        const dataCreate = await GALLERY2.create(req.body);
 
         if (req.body.role) {
-            await USERGALLERY.findByIdAndDelete(req.body.role);
+            await USERGALLERY2.findByIdAndDelete(req.body.role);
         }
 
         res.status(201).json({
@@ -55,14 +57,8 @@ exports.CreateGallery = async function (req, res, next) {
 
 exports.ReadGallery = async function (req, res, next) {
     try {
-      const categoryData = await CATEGORY.find({ Type: "gallery" }).select('CategoryName CategoryId -_id');
       
-      const GalleryData = await GALLERY.find();
-
-      const categoryMap = {};
-      categoryData.forEach(category => {
-        categoryMap[category.CategoryId] = category.CategoryName;
-      });
+      const GalleryData = await GALLERY2.find();
 
       const processedGalleryData = GalleryData.map(item => ({
         ...item.toObject(),
@@ -99,7 +95,7 @@ exports.UpdateGallery = async function (req, res, next) {
             }
         }
 
-        const dataUpdate = await GALLERY.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const dataUpdate = await GALLERY2.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.status(200).json({
             status: 1,
             message: 'Data Updated Successfully',
@@ -116,7 +112,7 @@ exports.UpdateGallery = async function (req, res, next) {
 
 exports.DeleteGallery = async function (req, res, next) {
     try {
-        await GALLERY.findByIdAndDelete(req.params.id);
+        await GALLERY2.findByIdAndDelete(req.params.id);
         res.status(204).json({
             status: 1,
             message: 'Data Deleted Successfully',

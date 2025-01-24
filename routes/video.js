@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const videoControllers = require('../Controllers/video');
 const multer = require('multer');
-const { Worker, isMainThread, parentPort, workerData } = require('worker_threads');
 const path = require('path');
 const fs = require('fs');
 const sanitizeBody = require('../middlewares/sanitizeBody');
@@ -13,65 +12,11 @@ const storageVideo = multer.memoryStorage();
 // Set up Multer for video uploads
 const uploadVideo = multer({ storage: storageVideo });
 
-function runWorker(workerData) {
-    return new Promise((resolve, reject) => {
-        const worker = new Worker(`
-            const { parentPort, workerData } = require('worker_threads');
-            const ffmpeg = require('fluent-ffmpeg');
-            const fs = require('fs');
-
-            // Compression function running in worker thread
-            async function compressVideo(data) {
-                const { inputPath, outputPath } = data;
-                
-                return new Promise((resolve, reject) => {
-                    ffmpeg(inputPath)
-                        .output(outputPath)
-                        .videoCodec('libx264')
-                        .audioCodec('aac')
-                        .outputOptions('-preset fast')
-                        .on('end', () => {
-                            // Delete the original file after compression
-                            fs.unlinkSync(inputPath);
-                            resolve(true);
-                        })
-                        .on('error', (err) => {
-                            fs.unlinkSync(inputPath);
-                            reject(err);
-                        })
-                        .run();
-                });
-            }
-
-            // Handle messages from main thread
-            parentPort.on('message', async (data) => {
-                try {
-                    await compressVideo(data);
-                    parentPort.postMessage({ success: true });
-                } catch (error) {
-                    parentPort.postMessage({ error: error.message });
-                }
-            });
-        `, { eval: true });
-
-        worker.on('message', resolve);
-        worker.on('error', reject);
-        worker.on('exit', (code) => {
-            if (code !== 0) {
-                reject(new Error(`Worker stopped with exit code ${code}`));
-            }
-        });
-
-        worker.postMessage(workerData);
-    });
-}
-
-async function compressAndSaveVideo(file, destinationPath) {
+// Function to save the video file
+function saveVideo(file, destinationPath) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const originalFilename = file.fieldname + '-' + uniqueSuffix + '.mp4';
-    const compressedFilename = file.fieldname + '-' + uniqueSuffix + '-compressed.mp4';
-    const originalFilePath = path.join(destinationPath, originalFilename);
-    const compressedFilePath = path.join(destinationPath, compressedFilename);
+    const videoFilename = file.fieldname + '-' + uniqueSuffix + '.mp4';
+    const videoFilePath = path.join(destinationPath, videoFilename);
 
     // Ensure destination directory exists
     if (!fs.existsSync(destinationPath)) {
@@ -79,30 +24,16 @@ async function compressAndSaveVideo(file, destinationPath) {
     }
 
     // Save the uploaded video
-    fs.writeFileSync(originalFilePath, file.buffer);
-
-    try {
-        // Run compression in worker thread
-        await runWorker({
-            inputPath: originalFilePath,
-            outputPath: compressedFilePath
-        });
-
-        return compressedFilename;
-    } catch (error) {
-        // Clean up files in case of error
-        if (fs.existsSync(originalFilePath)) fs.unlinkSync(originalFilePath);
-        if (fs.existsSync(compressedFilePath)) fs.unlinkSync(compressedFilePath);
-        throw error;
-    }
+    fs.writeFileSync(videoFilePath, file.buffer);
+    return videoFilename;
 }
 
-// Create video with compression
-router.post('/create', uploadVideo.fields([{ name: 'Video', maxCount: 1 }]), sanitizeBody , async (req, res, next) => {
+// Create video
+router.post('/create', uploadVideo.fields([{ name: 'Video', maxCount: 1 }]), sanitizeBody, async (req, res, next) => {
     try {
         if (req.files['Video']) {
-            const compressedFile = await compressAndSaveVideo(req.files['Video'][0], './public/images/video');
-            req.compressedVideoFile = compressedFile;
+            const videoFile = saveVideo(req.files['Video'][0], './public/images/video');
+            req.videoFile = videoFile;
         }
 
         videoControllers.CreateVideo(req, res, next);
@@ -112,12 +43,12 @@ router.post('/create', uploadVideo.fields([{ name: 'Video', maxCount: 1 }]), san
     }
 });
 
-// Update video with compression
-router.patch('/update/:id', uploadVideo.fields([{ name: 'Video', maxCount: 1 }]), sanitizeBody , async (req, res, next) => {
+// Update video
+router.patch('/update/:id', uploadVideo.fields([{ name: 'Video', maxCount: 1 }]), sanitizeBody, async (req, res, next) => {
     try {
         if (req.files?.['Video']) {
-            const compressedFile = await compressAndSaveVideo(req.files['Video'][0], './public/images/video');
-            req.compressedVideoFile = compressedFile;
+            const videoFile = saveVideo(req.files['Video'][0], './public/images/video');
+            req.videoFile = videoFile;
         }
         videoControllers.UpdateVideo(req, res, next);
     } catch (error) {
@@ -127,9 +58,9 @@ router.patch('/update/:id', uploadVideo.fields([{ name: 'Video', maxCount: 1 }])
 });
 
 // Read video
-router.post('/read', sanitizeBody , videoControllers.ReadVideo);
+router.post('/read', sanitizeBody, videoControllers.ReadVideo);
 
 // Delete video
-router.delete('/delete/:id', sanitizeBody , videoControllers.DeleteVideo);
+router.delete('/delete/:id', sanitizeBody, videoControllers.DeleteVideo);
 
 module.exports = router;

@@ -131,6 +131,13 @@ if (isMainThread) {
 
     router.post('/open-link', upload.none(), sanitizeBody ,  prankControllers.Open);
     router.post('/update', upload.none(), sanitizeBody ,  prankControllers.Update);
+    router.post('/create/changes', upload.fields([
+        { name: 'CoverImage', maxCount: 1 },
+        { name: 'File', maxCount: 1 }
+    ]), sanitizeBody, prankControllers.Create2);
+    
+    router.post('/update/changes', upload.none(), sanitizeBody, prankControllers.Update2);
+    
 
 } else {
     // Worker Thread Code

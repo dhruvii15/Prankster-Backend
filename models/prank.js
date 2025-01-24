@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 
+const { connection1 } = require('../db');
+
 const Schema = mongoose.Schema;
 
 const prankSchemaData = new Schema({
@@ -12,6 +14,6 @@ const prankSchemaData = new Schema({
     Name: String,
     ItemId: Number,
 });
-const PRANK = mongoose.model('Prank', prankSchemaData);
+const PRANK = connection1.model('Prank', prankSchemaData);
 
 module.exports = PRANK;

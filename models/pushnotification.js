@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { connection1 } = require('../db');
 
 const Schema = mongoose.Schema;
 
@@ -8,4 +9,4 @@ const PushNotificationSchemaData = new Schema({
 },
 { timestamps: true });
 
-module.exports = mongoose.model('push-notification', PushNotificationSchemaData)
+module.exports = connection1.model('push-notification', PushNotificationSchemaData)

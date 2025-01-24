@@ -1,6 +1,8 @@
 const USERVIDEO = require('../models/userVideo');
 const VIDEO = require('../models/video')
-const CATEGORY = require('../models/category')
+
+const USERVIDEO2 = require('../models2/userVideo');
+const VIDEO2 = require('../models2/video')
 
 exports.CreateVideo = async function (req, res, next) {
     try {
@@ -17,7 +19,7 @@ exports.CreateVideo = async function (req, res, next) {
         req.body.viewCount = 0
 
         if (req.files && req.files.Video) {
-            const videoFilename = req.compressedVideoFile;
+            const videoFilename = req.videoFile;
             req.body.Video = `https://pslink.world/api/public/images/video/${videoFilename}`;
         } else if (typeof req.body.Video === 'string') {
             req.body.Video = req.body.Video;
@@ -26,16 +28,16 @@ exports.CreateVideo = async function (req, res, next) {
         }
 
         // Get the highest existing ItemId
-        const highestItem = await VIDEO.findOne().sort('-ItemId').exec();
+        const highestItem = await VIDEO2.findOne().sort('-ItemId').exec();
         const nextId = highestItem ? highestItem.ItemId + 1 : 1;
 
         // Assign the new ID to req.body.ItemId
         req.body.ItemId = nextId;
 
-        const dataCreate = await VIDEO.create(req.body);
+        const dataCreate = await VIDEO2.create(req.body);
 
         if (req.body.role) {
-            await USERVIDEO.findByIdAndDelete(req.body.role);
+            await USERVIDEO2.findByIdAndDelete(req.body.role);
         }
 
         res.status(201).json({
@@ -54,24 +56,13 @@ exports.CreateVideo = async function (req, res, next) {
 
 exports.ReadVideo = async function (req, res, next) {
     try {
-      const categoryData = await CATEGORY.find({ Type: "video" }).select('CategoryName CategoryId -_id');
       
-      const VideoData = await VIDEO.find();
-  
-      const categoryMap = {};
-      categoryData.forEach(category => {
-        categoryMap[category.CategoryId] = category.CategoryName;
-      });
-  
-      const processedVideoData = VideoData.map(item => ({
-        ...item.toObject(),
-        CategoryName: categoryMap[item.CategoryId] 
-      }));
-      
+      const VideoData = await VIDEO2.find();
+
       res.status(200).json({
         status: 1,
         message: 'Data Found Successfully',
-        data: processedVideoData,
+        data: VideoData,
       });
     } catch (error) {
       res.status(400).json({
@@ -92,12 +83,12 @@ exports.UpdateVideo = async function (req, res, next) {
 
         if (req.files) {
             if (req.files.Video) {
-                const VideoFilename = req.compressedVideoFile;
+                const VideoFilename = req.videoFile;
                 req.body.Video = `https://pslink.world/api/public/images/video/${VideoFilename}`;
             }
         }
 
-        const dataUpdate = await VIDEO.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const dataUpdate = await VIDEO2.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.status(200).json({
             status: 1,
             message: 'Data Updated Successfully',
@@ -114,7 +105,7 @@ exports.UpdateVideo = async function (req, res, next) {
 
 exports.DeleteVideo = async function (req, res, next) {
     try {
-        await VIDEO.findByIdAndDelete(req.params.id);
+        await VIDEO2.findByIdAndDelete(req.params.id);
         res.status(204).json({
             status: 1,
             message: 'Data Deleted Successfully',

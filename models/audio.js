@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { connection1 } = require('../db');
 
 const Schema = mongoose.Schema;
 
@@ -29,6 +30,6 @@ const audioSchemaData = new Schema({
         type: Number,
     }
 });
-const AUDIO = mongoose.model('Audio', audioSchemaData);
+const AUDIO = connection1.model('Audio', audioSchemaData);
 
 module.exports =  AUDIO;

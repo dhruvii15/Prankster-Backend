@@ -1,6 +1,14 @@
 const axios = require('axios');
 const mongoose = require('mongoose');
-const NOTIFICATION = require('../models/notification'); // Assuming the Notification model is correctly defined.
+const NOTIFICATION = require('../models/notification'); 
+require('dotenv').config(); 
+
+const mongoUri = process.env.MONGODB_URI; 
+
+mongoose.connect(mongoUri)
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.log('Failed to connect to MongoDB', err));
+
 
 let isNotificationSending = false;
 
@@ -49,7 +57,7 @@ const sendRandomNotification = async () => {
         const { Title, Description } = notifications[randomIndex];
 
         console.log(`Sending notification: ${Title} - ${Description}`);
-        // await sendPushNotification(Title, Description);
+        await sendPushNotification(Title, Description);
     } catch (error) {
         console.error('Error fetching or sending notification:', error);
     } finally {
@@ -57,8 +65,4 @@ const sendRandomNotification = async () => {
     }
 };
 
-// Call the function once per cron job execution (no need for setInterval)
 sendRandomNotification();
-
-
-// /home/plexustechnology/nodevenv/pslink.world/api/20/bin/node /home/plexustechnology/pslink.world/api/Controllers/cronTest.js > /home/plexustechnology/pslink.world/api/Controllers/cron-output.log 2>&1

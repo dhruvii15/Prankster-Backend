@@ -6,7 +6,7 @@ const sanitizeBody = (req, res, next) => {
     }, {});
 
     req.body = sanitizedBody;
-    console.log(sanitizedBody);
+    // console.log(sanitizedBody);
     
     next(); // Pass control to the next middleware
 };
