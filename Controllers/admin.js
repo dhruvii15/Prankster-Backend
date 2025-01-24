@@ -1,4 +1,5 @@
 const ADMIN = require('../models/admin')
+const ADMIN2 = require('../models2/admin')
 var jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 var path = require('path');
@@ -11,7 +12,7 @@ exports.sequre = async function (req, res, next) {
       throw new Error('please send Token')
     }
     var decoded = jwt.verify(token, 'KEY');  // invalid signature (for wrong key) , jwt malformed(For wrong token)
-    let userCheck = await ADMIN.findById(decoded.id) //if id is wrong throw this msg
+    let userCheck = await ADMIN2.findById(decoded.id) //if id is wrong throw this msg
     if (!userCheck) {
       throw new Error("user not found")
     }
@@ -36,7 +37,7 @@ exports.AdminSignup = async function (req, res, next) {
 
     req.body.pass = await bcrypt.hash(req.body.pass, 8)
     req.body.AdsStatus = false
-    let dataCreate = await ADMIN.create(req.body)
+    let dataCreate = await ADMIN2.create(req.body)
 
     res.status(201).json({
       status: 1,
@@ -57,7 +58,7 @@ exports.AdminLogin = async function (req, res, next) {
     if (!req.body.email || !req.body.pass) {
       throw new Error('Enter All Fields')
     }
-    let dataFind = await ADMIN.findOne({ email: req.body.email })
+    let dataFind = await ADMIN2.findOne({ email: req.body.email })
     if (!dataFind) {
       throw new Error("Email Id Not Found")
     }
@@ -82,7 +83,7 @@ exports.AdminLogin = async function (req, res, next) {
 
 exports.AdminRead = async function (req, res, next) {
   try {
-    const dataFind = await ADMIN.find();
+    const dataFind = await ADMIN2.find();
     res.status(200).json({
       status: "Success!",
       message: "Data Found Successfully",
@@ -100,7 +101,7 @@ exports.AdminRead = async function (req, res, next) {
 
 exports.AdminUpdate = async function (req, res, next) {
   try {
-    let dataUpdate = await ADMIN.findByIdAndUpdate(req.params.id, req.body, { new: true })
+    let dataUpdate = await ADMIN2.findByIdAndUpdate(req.params.id, req.body, { new: true })
 
     res.status(201).json({
       status: 1,
@@ -127,7 +128,7 @@ exports.Forgetpass = async function (req, res, next) {
     }
     req.body.pass = await bcrypt.hash(req.body.pass, 8)
     req.body.confirmpass = await bcrypt.hash(req.body.confirmpass, 8)
-    let dataupdate = await ADMIN.findOneAndUpdate({ email: req.body.email }, req.body, { new: true })
+    let dataupdate = await ADMIN2.findOneAndUpdate({ email: req.body.email }, req.body, { new: true })
 
     if (!dataupdate) {
       throw new Error('Email id Not Found!')

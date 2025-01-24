@@ -262,24 +262,12 @@ exports.FoundAudio2 = async function (req, res, next) {
 
 exports.ReadAudio = async function (req, res, next) {
   try {
-    const categoryData = await CATEGORY.find({ Type: "audio" }).select('CategoryName CategoryId -_id');
-    
     const AudioData = await AUDIO2.find();
-
-    const categoryMap = {};
-    categoryData.forEach(category => {
-      categoryMap[category.CategoryId] = category.CategoryName;
-    });
-
-    const processedAudioData = AudioData.map(item => ({
-      ...item.toObject(),
-      CategoryName: categoryMap[item.CategoryId] 
-    }));
     
     res.status(200).json({
       status: 1,
       message: 'Data Found Successfully',
-      data: processedAudioData,
+      data: AudioData,
     });
   } catch (error) {
     res.status(400).json({
@@ -326,7 +314,7 @@ exports.UpdateAudio = async function (req, res, next) {
 
 exports.DeleteAudio = async function (req, res, next) {
     try {
-        await AUDIO.findByIdAndDelete(req.params.id);
+        await AUDIO2.findByIdAndDelete(req.params.id);
         res.status(204).json({
             status: 1,
             message: 'Data Deleted Successfully',

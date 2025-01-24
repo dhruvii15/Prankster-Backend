@@ -59,16 +59,13 @@ exports.ReadGallery = async function (req, res, next) {
     try {
       
       const GalleryData = await GALLERY2.find();
-
-      const processedGalleryData = GalleryData.map(item => ({
-        ...item.toObject(),
-        CategoryName: categoryMap[item.CategoryId] 
-      }));
+      console.log(GalleryData);
+      
       
       res.status(200).json({
         status: 1,
         message: 'Data Found Successfully',
-        data: processedGalleryData,
+        data: GalleryData,
       });
     } catch (error) {
       res.status(400).json({

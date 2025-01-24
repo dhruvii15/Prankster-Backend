@@ -364,8 +364,7 @@ exports.Social = async function (req, res, next) {
         }
         const url = req.body.url;
         const cookies = req.query.cookies || 'your_instagram_cookies_here';
-        // const cookies = 'datr=OuTeZsdj8SK67Rhoqr8SYcNR; ig_did=D06039D8-7E13-43F2-AACB-55B27E54926A; ig_nrcb=1; ps_l=1; ps_n=1; mid=Z01FHQALAAGoUNLjhYI54SMjSjfM; ds_user_id=14819990979; csrftoken=ibrmwu4okbsD852zWBjqJ486H9AcHmjR; sessionid=14819990979%3AJhca6bsCLbTR6B%3A7%3AAYdzadPNBV3rYDOgUe-ghsoKabugDtfs8K3rKAIvEg; dpr=2; wd=360x400; rur="LDC\05414819990979\0541769228132:01f70f070eff53df7f7470aca73353e22894aa6bad0675fb90d9073c974381d559a2d486";';
-
+        // const cookies = 'datr=OuTeZsdj8SK67Rhoqr8SYcNR; ig_did=D06039D8-7E13-43F2-AACB-55B27E54926A; ig_nrcb=1; ps_l=1; ps_n=1; mid=Z01FHQALAAGoUNLjhYI54SMjSjfM; ds_user_id=14819990979; csrftoken=ibrmwu4okbsD852zWBjqJ486H9AcHmjR; sessionid=14819990979%3AJhca6bsCLbTR6B%3A7%3AAYfUREoXqAgqfq5uyMAXMAOfx3sHH25FlQar1pLTCQ; wd=160x868; dpr=2; rur="LDC\05414819990979\0541769256902:01f79b73a63403a61d63fd878644a6090cdef9b046aeefa623309d6a0c94da9a228e572e"';
 
         if (!url) {
             return res.status(400).json({ error: 'URL is required' });
@@ -431,7 +430,58 @@ async function handleInstagramUrl(instagramUrl, cookies) {
     };
 }
 
+// async function handleInstagramUrl(instagramUrl, cookies) {
+//     const { type, mediaId } = parseInstagramUrl(instagramUrl);
+
+//     const apiUrl = `https://www.instagram.com/${type}/${mediaId}/?__a=1&__d=dis`;
+
+//     const response = await fetch(apiUrl, {
+//         headers: getHeaders(cookies),
+//         credentials: 'include'
+//     });
+
+//     if (!response.ok) {
+//         throw new Error(`Instagram API responded with status: ${response.status}`);
+//     }
+
+//     const data = await response.json();
+
+//     // const media = data.graphql.shortcode_media;
+    
+//     // // Get first media URL
+//     // const firstMediaUrl = media.edge_sidecar_to_children 
+//     //     ? media.edge_sidecar_to_children.edges[0].node.is_video 
+//     //         ? media.edge_sidecar_to_children.edges[0].node.video_url 
+//     //         : media.edge_sidecar_to_children.edges[0].node.display_url
+//     //     : (media.is_video ? media.video_url : media.display_url);
+
+//     if (!data || !data.items || data.items.length === 0) {
+//         throw new Error('Unable to extract media from Instagram response');
+//     }
+
+//     let mediaUrl, responseType;
+
+//     if (type === 'reel') {
+//         mediaUrl = data.items[0].video_versions[0].url;
+//         responseType = 'reel';
+//     } else if (type === 'p') {
+//         mediaUrl = data.items[0].image_versions2.candidates[0].url;
+//         responseType = 'post';
+//     } else {
+//         throw new Error('Unsupported media type');
+//     }
+
+//     return {
+//         status: 1,
+//         message: `Instagram ${responseType} URL Found Successfully`,
+//         // type: responseType,
+//         data: mediaUrl
+//     };
+// }
+
 // Handle Snapchat URL
+
+
 async function handleSnapchatUrl(snapchatUrl) {
     const apiUrl = 'https://downloader-api.sikderithub.com/snap.php';
     

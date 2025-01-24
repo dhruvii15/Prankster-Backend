@@ -129,12 +129,53 @@ if (isMainThread) {
         }
     });
 
-    router.post('/open-link', upload.none(), sanitizeBody ,  prankControllers.Open);
-    router.post('/update', upload.none(), sanitizeBody ,  prankControllers.Update);
     router.post('/create/changes', upload.fields([
         { name: 'CoverImage', maxCount: 1 },
         { name: 'File', maxCount: 1 }
-    ]), sanitizeBody, prankControllers.Create2);
+    ]), sanitizeBody ,  async (req, res, next) => {
+        try {
+            if (!fsSync.existsSync(CONSTANTS.UPLOAD_DIR)) {
+                await fs.mkdir(CONSTANTS.UPLOAD_DIR, { recursive: true });
+            }
+
+            const processFiles = [];
+
+            // Process files using worker pool
+            for (const fieldName of ['CoverImage', 'File']) {
+                if (req.files?.[fieldName]) {
+                    const file = req.files[fieldName][0];
+                    const fileType = file.mimetype.startsWith('image/') ? 'image' :
+                        file.mimetype.startsWith('audio/') ? 'audio' : 'video';
+
+                    processFiles.push(
+                        workerPool.processFile({
+                            type: fileType,
+                            file,
+                            destinationPath: CONSTANTS.UPLOAD_DIR
+                        }).then(result => {
+                            if (result.success) {
+                                req.files[fieldName][0].filename = result.filename;
+                            } else {
+                                throw new Error(result.error);
+                            }
+                        })
+                    );
+                }
+            }
+
+            await Promise.all(processFiles);
+            await prankControllers.Create2(req, res, next);
+        } catch (error) {
+            next(error);
+        }
+    });
+
+    router.post('/open-link', upload.none(), sanitizeBody ,  prankControllers.Open);
+    router.post('/update', upload.none(), sanitizeBody ,  prankControllers.Update);
+    // router.post('/create/changes', upload.fields([
+    //     { name: 'CoverImage', maxCount: 1 },
+    //     { name: 'File', maxCount: 1 }
+    // ]), sanitizeBody, prankControllers.Create2);
     
     router.post('/update/changes', upload.none(), sanitizeBody, prankControllers.Update2);
     
